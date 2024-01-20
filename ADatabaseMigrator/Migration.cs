@@ -1,6 +1,6 @@
 ﻿using ADatabaseMigrator.Core;
 
-namespace ADataMigrator.GalacticWaste
+namespace ADatabaseMigrator
 {
     public class Migration : IMigration
     {

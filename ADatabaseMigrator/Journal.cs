@@ -1,7 +1,7 @@
 ﻿using System.Collections.Generic;
 using ADatabaseMigrator.Core;
 
-namespace ADataMigrator.GalacticWaste
+namespace ADatabaseMigrator
 {
     public class Journal : MigrationJournal<Migration>
     {

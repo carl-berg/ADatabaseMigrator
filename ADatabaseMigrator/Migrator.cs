@@ -1,12 +1,12 @@
 ﻿using ADatabaseMigrator.Core;
 
-namespace ADataMigrator.GalacticWaste
+namespace ADatabaseMigrator
 {
     public class Migrator : MigratorBase<Migration, MigrationScript, Journal>
     {
         public Migrator(
-            IMigrationScriptLoader<MigrationScript> scriptLoader, 
-            IMigrationsJournalLoader<Journal, Migration> journalLoader, 
+            IMigrationScriptLoader<MigrationScript> scriptLoader,
+            IMigrationsJournalLoader<Journal, Migration> journalLoader,
             IMigrationScriptRunner<MigrationScript> scriptRunner) : base(scriptLoader, journalLoader, scriptRunner) { }
 
         protected override bool ShouldRunScript(MigrationScript script, Journal journal) => script switch

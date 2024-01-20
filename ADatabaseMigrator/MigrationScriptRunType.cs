@@ -1,4 +1,4 @@
-﻿namespace ADataMigrator.GalacticWaste
+﻿namespace ADatabaseMigrator
 {
     public enum MigrationScriptRunType
     {
