@@ -4,15 +4,21 @@ namespace ADatabaseMigrator
 {
     public class Migration : IMigration
     {
-        public Migration(string id, MigrationScriptRunType runType, string? scriptHash)
+        public Migration(string id, MigrationScriptRunType runType, string version, string? scriptHash)
         {
             Id = id;
+            Version = version;
             RunType = runType;
             ScriptHash = scriptHash;
         }
 
         /// <inheritdoc/>
         public string Id { get; }
+
+        /// <summary>
+        /// Script version
+        /// </summary>
+        public string Version { get; }
 
         public MigrationScriptRunType RunType { get; }
 

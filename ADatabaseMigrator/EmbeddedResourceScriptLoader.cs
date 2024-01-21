@@ -1,6 +1,7 @@
 ﻿using ADatabaseMigrator.Core;
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Threading.Tasks;
@@ -14,36 +15,52 @@ namespace ADatabaseMigrator
 
         protected List<AssemblyEmbeddedResources> Resources { get; } = new();
 
-        public Task<IReadOnlyList<MigrationScript>> Load()
+        public async Task<IReadOnlyList<MigrationScript>> Load()
         {
             var scripts = new List<MigrationScript>();
             foreach (var assemblyResources in Resources)
             {
+                var assemblyRootNamespace = assemblyResources.Assembly.GetName().Name;
                 var embeddedResourceNames = assemblyResources.Assembly.GetManifestResourceNames();
                 foreach (var (runtype, @namespace) in assemblyResources)
                 {
-                    foreach (var embeddedResource in embeddedResourceNames.Where(x => x.StartsWith(@namespace)))
+                    foreach (var embeddedResource in embeddedResourceNames.Where(name => name.StartsWith($"{assemblyRootNamespace}.{@namespace}")))
                     {
-                        //TODO: Extract version
-                        //TODO: Extract string contents
-                        //TODO: Extract name
+                        var info = assemblyResources.Assembly.GetManifestResourceInfo(embeddedResource);
+                        var stream = assemblyResources.Assembly.GetManifestResourceStream(embeddedResource);
+                        using var reader = new StreamReader(stream);
+                        var script = await reader.ReadToEndAsync();
+                        var lastDirectoryIndex = Path.GetFileNameWithoutExtension(embeddedResource).LastIndexOf('.');
+                        var fileName = embeddedResource.Substring(lastDirectoryIndex + 1);
+                        scripts.Add(new MigrationScript(
+                            id: embeddedResource,
+                            fileName: fileName,
+                            runType: runtype,
+                            version: string.Empty,
+                            script: script,
+                            scriptHash: string.Empty));
+
+                        // TODO: Extract version
+                        // not super clear how to do this... maybe exclude the filename and the namespace part, remove underscores and try to regex a version out of what's left
+                        // but i think this logic should probably be extracted as its own dependency so you can plug in your own to handle weird scenarios
+                        // maybe this versioner dependency should be set by namespace inclusion since versioning is not needed for RunAlways/RunIfChanged
+
                         //TODO: Extract hash
-                        //TODO: Add migration script to list
                     }
                 }
             }
 
-            throw new NotImplementedException("TODO");
+            return scripts;
         }
 
-        public IEmbeddedResourceAssemblyBuilder UsingAssembly(Assembly assembly)
+        IEmbeddedResourceAssemblyBuilder IEmbeddedResourceBuilder.UsingAssembly(Assembly assembly)
         {
             var assemblyResources = new AssemblyEmbeddedResources(assembly);
             Resources.Add(assemblyResources);
             return new AssemblyBuilder(this, assemblyResources);
         }
 
-        public IEmbeddedResourceAssemblyBuilder UsingAssemblyFromType<T>() where T : class => UsingAssembly(typeof(T).Assembly);
+        IEmbeddedResourceAssemblyBuilder IEmbeddedResourceBuilder.UsingAssemblyFromType<T>() where T : class => ((IEmbeddedResourceBuilder)this).UsingAssembly(typeof(T).Assembly);
 
         internal class AssemblyBuilder(IEmbeddedResourceBuilder _root, AssemblyEmbeddedResources _resources) : IEmbeddedResourceAssemblyBuilder
         {
