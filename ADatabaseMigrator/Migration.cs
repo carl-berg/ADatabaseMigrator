@@ -1,24 +1,25 @@
 ﻿using ADatabaseMigrator.Core;
+using System;
 
 namespace ADatabaseMigrator
 {
     public class Migration : IMigration
     {
-        public Migration(string id, MigrationScriptRunType runType, string version, string? scriptHash)
+        public Migration(string name, MigrationScriptRunType runType, IComparable version, string? scriptHash)
         {
-            Id = id;
+            Name = name;
             Version = version;
             RunType = runType;
             ScriptHash = scriptHash;
         }
 
         /// <inheritdoc/>
-        public string Id { get; }
+        public string Name { get; }
 
         /// <summary>
         /// Script version
         /// </summary>
-        public string Version { get; }
+        public IComparable Version { get; }
 
         public MigrationScriptRunType RunType { get; }
 

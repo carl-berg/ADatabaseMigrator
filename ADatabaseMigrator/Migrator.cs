@@ -14,7 +14,7 @@ namespace ADatabaseMigrator
             { RunType: MigrationScriptRunType.RunAlways } => true,
             { RunType: MigrationScriptRunType.RunIfChanged } => journal.HasChanged(script),
             { RunType: MigrationScriptRunType.RunOnce } => journal.Contains(script) is false,
-            _ => throw new System.Exception($"Migration script {script.Id} has unknown runtype '{script.RunType}'")
+            _ => throw new System.Exception($"Migration script {script.Name} has unknown runtype '{script.RunType}'")
         };
     }
 }

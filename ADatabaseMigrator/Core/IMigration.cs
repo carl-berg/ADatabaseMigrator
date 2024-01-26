@@ -5,6 +5,6 @@
         /// <summary>
         /// Migration identifier that uniquely identifies this migration
         /// </summary>
-        string Id { get; }
+        string Name { get; }
     }
 }

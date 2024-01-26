@@ -1,13 +1,15 @@
 ﻿using ADatabaseMigrator.Core;
+using ADatabaseMigrator.ScriptLoading.EmbeddedResources.Versioning;
 using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Reflection;
+using System.Text;
 using System.Threading.Tasks;
-using static ADatabaseMigrator.EmbeddedResourceScriptLoader;
+using static ADatabaseMigrator.ScriptLoading.EmbeddedResources.EmbeddedResourceScriptLoader;
 
-namespace ADatabaseMigrator
+namespace ADatabaseMigrator.ScriptLoading.EmbeddedResources
 {
     public class EmbeddedResourceScriptLoader : IMigrationScriptLoader<MigrationScript>, IEmbeddedResourceBuilder
     {
@@ -22,35 +24,32 @@ namespace ADatabaseMigrator
             {
                 var assemblyRootNamespace = assemblyResources.Assembly.GetName().Name;
                 var embeddedResourceNames = assemblyResources.Assembly.GetManifestResourceNames();
-                foreach (var (runtype, @namespace) in assemblyResources)
+                foreach (var (runType, versionLoader, @namespace) in assemblyResources)
                 {
-                    foreach (var embeddedResource in embeddedResourceNames.Where(name => name.StartsWith($"{assemblyRootNamespace}.{@namespace}")))
+                    var currentNamespaceRoot = $"{assemblyRootNamespace}.{@namespace}";
+                    foreach (var embeddedResource in embeddedResourceNames.Where(name => name.StartsWith(currentNamespaceRoot)))
                     {
                         var info = assemblyResources.Assembly.GetManifestResourceInfo(embeddedResource);
                         var stream = assemblyResources.Assembly.GetManifestResourceStream(embeddedResource);
-                        using var reader = new StreamReader(stream);
+                        using var reader = new StreamReader(stream, Encoding.UTF8);
                         var script = await reader.ReadToEndAsync();
                         var lastDirectoryIndex = Path.GetFileNameWithoutExtension(embeddedResource).LastIndexOf('.');
                         var fileName = embeddedResource.Substring(lastDirectoryIndex + 1);
+                        var version = versionLoader.GetVersion(assemblyResources.Assembly, embeddedResource, currentNamespaceRoot, fileName);
+
                         scripts.Add(new MigrationScript(
-                            id: embeddedResource,
-                            fileName: fileName,
-                            runType: runtype,
-                            version: string.Empty,
+                            name: embeddedResource,
+                            runType: runType,
+                            version: version,
                             script: script,
                             scriptHash: string.Empty));
-
-                        // TODO: Extract version
-                        // not super clear how to do this... maybe exclude the filename and the namespace part, remove underscores and try to regex a version out of what's left
-                        // but i think this logic should probably be extracted as its own dependency so you can plug in your own to handle weird scenarios
-                        // maybe this versioner dependency should be set by namespace inclusion since versioning is not needed for RunAlways/RunIfChanged
 
                         //TODO: Extract hash
                     }
                 }
             }
 
-            return scripts;
+            return scripts.OrderBy(x => x.Version).ThenBy(x => x.Name).ToList();
         }
 
         IEmbeddedResourceAssemblyBuilder IEmbeddedResourceBuilder.UsingAssembly(Assembly assembly)
@@ -64,25 +63,40 @@ namespace ADatabaseMigrator
 
         internal class AssemblyBuilder(IEmbeddedResourceBuilder _root, AssemblyEmbeddedResources _resources) : IEmbeddedResourceAssemblyBuilder
         {
-            public IEmbeddedResourceAssemblyBuilder AddNamespaces(MigrationScriptRunType runType, params string[] namespaces)
+            public IEmbeddedResourceAssemblyBuilder AddNamespaces(MigrationScriptRunType runType, IEmbeddedResourceVersionLoader versionLoader, params string[] namespaces)
             {
                 foreach (var @namespace in namespaces)
                 {
-                    _resources.Add((runType, @namespace));
+                    _resources.Add(new(runType, versionLoader, @namespace));
                 }
 
                 return this;
             }
 
+            public IEmbeddedResourceAssemblyBuilder AddNamespaces<TVersionLoader>(MigrationScriptRunType runtype, params string[] namespaces) where TVersionLoader : IEmbeddedResourceVersionLoader, new()
+                => AddNamespaces(runtype, new TVersionLoader(), namespaces);
+
             public IEmbeddedResourceAssemblyBuilder UsingAssembly(Assembly assembly) => _root.UsingAssembly(assembly);
             public IEmbeddedResourceAssemblyBuilder UsingAssemblyFromType<T>() where T : class => _root.UsingAssemblyFromType<T>();
         }
 
-        public class AssemblyEmbeddedResources : List<(MigrationScriptRunType Runtype, string Namespace)>
+        public class AssemblyEmbeddedResources(Assembly assembly) : List<AssemblyEmbeddedResourceNamespace>
         {
-            public AssemblyEmbeddedResources(Assembly assembly) => Assembly = assembly;
+            public Assembly Assembly { get; } = assembly;
+        }
 
-            public Assembly Assembly { get; }
+        public class AssemblyEmbeddedResourceNamespace(MigrationScriptRunType runType, IEmbeddedResourceVersionLoader versionLoader, string @namespace)
+        {
+            public MigrationScriptRunType RunType { get; } = runType;
+            public IEmbeddedResourceVersionLoader VersionLoader { get; } = versionLoader;
+            public string Namespace { get; } = @namespace;
+
+            public void Deconstruct(out MigrationScriptRunType runType, out IEmbeddedResourceVersionLoader versionLoader, out string @namespace)
+            {
+                runType = RunType;
+                versionLoader = VersionLoader;
+                @namespace = Namespace;
+            }
         }
 
         public interface IEmbeddedResourceBuilder
@@ -93,7 +107,8 @@ namespace ADatabaseMigrator
 
         public interface IEmbeddedResourceAssemblyBuilder : IEmbeddedResourceBuilder
         {
-            IEmbeddedResourceAssemblyBuilder AddNamespaces(MigrationScriptRunType runtype, params string[] namespaces);
+            IEmbeddedResourceAssemblyBuilder AddNamespaces(MigrationScriptRunType runtype, IEmbeddedResourceVersionLoader version, params string[] namespaces);
+            IEmbeddedResourceAssemblyBuilder AddNamespaces<TVersionLoader>(MigrationScriptRunType runtype, params string[] namespaces) where TVersionLoader : IEmbeddedResourceVersionLoader, new();
         }
     }
 }
