@@ -1,37 +1,37 @@
 ﻿[
   {
     Script: {Scrubbed},
+    ScriptHash: 30c8755930eff185cdaebf09c22c97d5,
     Name: ADatabaseMigrator.Tests.{MigrationPath}._001._00._0.001_Person.sql,
-    Version: 1.0.0,
     RunType: RunOnce,
-    ScriptHash: 30c8755930eff185cdaebf09c22c97d5
+    Version: 1.0.0
   },
   {
     Script: {Scrubbed},
+    ScriptHash: 6939a94cce95d92b82c0c8ad7549d54e,
     Name: ADatabaseMigrator.Tests.{MigrationPath}._001._00._2.001_PersonAge.sql,
-    Version: 1.0.2,
     RunType: RunOnce,
-    ScriptHash: 6939a94cce95d92b82c0c8ad7549d54e
+    Version: 1.0.2
   },
   {
     Script: {Scrubbed},
+    ScriptHash: 857b9a98d1e56c0c204831465f44a9e3,
     Name: ADatabaseMigrator.Tests.{MigrationPath}._001._00._12.001_PersonBirthDate.sql,
-    Version: 1.0.12,
     RunType: RunOnce,
-    ScriptHash: 857b9a98d1e56c0c204831465f44a9e3
+    Version: 1.0.12
   },
   {
     Script: {Scrubbed},
+    ScriptHash: 4fbc10f13535e283bc5f473af39b2074,
     Name: ADatabaseMigrator.Tests.Scripts.RunIfChanged._001_Views.001_People.sql,
-    Version: 1.0.0.0,
     RunType: RunIfChanged,
-    ScriptHash: 4fbc10f13535e283bc5f473af39b2074
+    Version: 1.0.0.0
   },
   {
     Script: {Scrubbed},
+    ScriptHash: 581a213f0939ed3923017162b068d4ce,
     Name: ADatabaseMigrator.Tests.Scripts.RunAlways.001_RunLog.sql,
-    Version: 1.0.0.0,
-    RunType: RunIfChanged,
-    ScriptHash: 7e284d32ac7f42d631641850efcba718
+    RunType: RunAlways,
+    Version: 1.0.0.0
   }
 ]

@@ -15,7 +15,7 @@ public class EmbeddedResourceTests
             .UsingAssemblyFromType<EmbeddedResourceTests>()
                 .AddNamespaces<VersionFromPathVersionLoader>(MigrationScriptRunType.RunOnce, migrationNamespace)
                 .AddNamespaces<VersionFromAssemblyVersionLoader>(MigrationScriptRunType.RunIfChanged, "Scripts.RunIfChanged")
-                .AddNamespaces<VersionFromAssemblyVersionLoader>(MigrationScriptRunType.RunIfChanged, "Scripts.RunAlways"));
+                .AddNamespaces<VersionFromAssemblyVersionLoader>(MigrationScriptRunType.RunAlways, "Scripts.RunAlways"));
 
         var scripts = await scriptLoader.Load();
 
