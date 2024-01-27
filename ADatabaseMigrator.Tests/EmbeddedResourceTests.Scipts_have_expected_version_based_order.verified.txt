@@ -1,21 +1,21 @@
 ﻿[
   {
     Script: {Scrubbed},
-    Name: ADatabaseMigrator.Tests.Scripts.Migrations._001._00._0.001_Person.sql,
+    Name: ADatabaseMigrator.Tests.{MigrationPath}._001._00._0.001_Person.sql,
     Version: 1.0.0,
     RunType: RunOnce,
     ScriptHash: 
   },
   {
     Script: {Scrubbed},
-    Name: ADatabaseMigrator.Tests.Scripts.Migrations._001._00._2.001_PersonAge.sql,
+    Name: ADatabaseMigrator.Tests.{MigrationPath}._001._00._2.001_PersonAge.sql,
     Version: 1.0.2,
     RunType: RunOnce,
     ScriptHash: 
   },
   {
     Script: {Scrubbed},
-    Name: ADatabaseMigrator.Tests.Scripts.Migrations._001._00._12.001_PersonBirthDate.sql,
+    Name: ADatabaseMigrator.Tests.{MigrationPath}._001._00._12.001_PersonBirthDate.sql,
     Version: 1.0.12,
     RunType: RunOnce,
     ScriptHash: 

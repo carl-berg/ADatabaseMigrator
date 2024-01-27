@@ -26,7 +26,7 @@ namespace ADatabaseMigrator.ScriptLoading.EmbeddedResources
                 {
                     var namespaceScripts = new List<MigrationScript>();
                     var currentNamespaceRoot = $"{assemblyRootNamespace}.{@namespace}";
-                    foreach (var embeddedResource in embeddedResourceNames.Where(name => name.StartsWith(currentNamespaceRoot)))
+                    foreach (var embeddedResource in embeddedResourceNames.Where(name => name.StartsWith($"{currentNamespaceRoot}.")))
                     {
                         var info = assemblyResources.Assembly.GetManifestResourceInfo(embeddedResource);
                         var stream = assemblyResources.Assembly.GetManifestResourceStream(embeddedResource);
