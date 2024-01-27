@@ -12,8 +12,7 @@ namespace ADatabaseMigrator.ScriptLoading.EmbeddedResources.Versioning
 
             var versionPart = embeddedResourceName
                 .Remove(lastDirectoryIndex)
-                .Substring(rootNamespace.Length)
-                .Trim('.')
+                .Substring(rootNamespace.Length + 1)
                 .Replace("_", "");
 
             return Version.TryParse(versionPart, out var match)

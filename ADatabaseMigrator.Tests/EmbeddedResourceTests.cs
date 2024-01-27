@@ -6,7 +6,7 @@ namespace ADatabaseMigrator.Tests;
 public class EmbeddedResourceTests
 {
     [Fact]
-    public async Task TestSomething()
+    public async Task Scipts_have_expected_version_based_order()
     {
         var scriptLoader = new EmbeddedResourceScriptLoader(configure => configure
             .UsingAssemblyFromType<EmbeddedResourceTests>()
