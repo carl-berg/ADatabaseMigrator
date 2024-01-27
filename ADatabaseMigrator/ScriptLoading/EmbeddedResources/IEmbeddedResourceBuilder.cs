@@ -1,10 +1,9 @@
 ﻿using System.Reflection;
 
-namespace ADatabaseMigrator.ScriptLoading.EmbeddedResources
+namespace ADatabaseMigrator.ScriptLoading.EmbeddedResources;
+
+public interface IEmbeddedResourceBuilder
 {
-    public interface IEmbeddedResourceBuilder
-    {
-        IEmbeddedResourceAssemblyBuilder UsingAssembly(Assembly assembly);
-        IEmbeddedResourceAssemblyBuilder UsingAssemblyFromType<T>() where T : class;
-    }
+    IEmbeddedResourceAssemblyBuilder UsingAssembly(Assembly assembly);
+    IEmbeddedResourceAssemblyBuilder UsingAssemblyFromType<T>() where T : class;
 }

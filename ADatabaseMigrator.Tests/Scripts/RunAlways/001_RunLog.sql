@@ -4,3 +4,5 @@ IF NOT EXISTS (SELECT * FROM sysobjects WHERE name='RunLog' and xtype='U')
         Timestamp DATETIME NOT NULL
     )
 GO
+
+INSERT INTO RunLog(Timestamp) VALUES(GETUTCDATE())

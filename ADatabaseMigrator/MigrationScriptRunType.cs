@@ -1,9 +1,8 @@
-﻿namespace ADatabaseMigrator
+﻿namespace ADatabaseMigrator;
+
+public enum MigrationScriptRunType
 {
-    public enum MigrationScriptRunType
-    {
-        RunOnce = 1,
-        RunIfChanged = 2,
-        RunAlways = 3,
-    }
+    RunOnce = 1,
+    RunIfChanged = 2,
+    RunAlways = 3,
 }
