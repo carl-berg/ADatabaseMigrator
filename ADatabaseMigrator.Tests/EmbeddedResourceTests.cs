@@ -16,6 +16,7 @@ public class EmbeddedResourceTests
 
         var scripts = await scriptLoader.Load();
 
-        await Verify(scripts.Select(x => new { x.Name, x.Version }));
+        await Verify(scripts)
+            .ScrubMember<MigrationScript>(x => x.Script);
     }
 }
