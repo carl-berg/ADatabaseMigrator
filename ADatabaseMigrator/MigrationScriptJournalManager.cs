@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Data.Common;
 using System.Globalization;
 using System.Linq;
+using System.Management;
 using System.Threading.Tasks;
 
 namespace ADatabaseMigrator;
@@ -40,14 +41,14 @@ public class MigrationScriptJournalManager(DbConnection _connection) : IMigratio
             {
                 Version = reader.GetString(0),
                 Name = reader.GetString(1),
-                Applied = DateTime.Parse(reader["Applied"].ToString(), CultureInfo.InvariantCulture, DateTimeStyles.AssumeUniversal | DateTimeStyles.AdjustToUniversal),
+                Applied = reader[nameof(MigrationJournalEntry.Applied)].ToString(),
                 ScriptHash = reader.GetString(3),
                 RunType = reader.GetString(4),
             });
         }
 
         return new MigrationJournal(journalEntries
-            .Select(x => x.ToMigration())
+            .Select(x => x.ToMigration(ParseDate, ParseRunType))
             .ToList());
     }
 
@@ -70,19 +71,22 @@ public class MigrationScriptJournalManager(DbConnection _connection) : IMigratio
         await command.ExecuteNonQueryAsync();
     }
 
+    protected virtual DateTime ParseDate(string value) => DateTime.Parse(value, CultureInfo.InvariantCulture, DateTimeStyles.AssumeUniversal | DateTimeStyles.AdjustToUniversal);
+    protected virtual MigrationScriptRunType ParseRunType(string value) => (MigrationScriptRunType)Enum.Parse(typeof(MigrationScriptRunType), value);
+
     private class MigrationJournalEntry
     {
         public string Version { get; set; }
         public string Name { get; set; }
-        public DateTime Applied { get; set; }
+        public string Applied { get; set; }
         public string RunType { get; set; }
         public string ScriptHash { get; set; }
 
-        public Migration ToMigration() => new(
+        public Migration ToMigration(Func<string, DateTime> dateParser, Func<string, MigrationScriptRunType> runTypeParser) => new(
             Name,
-            (MigrationScriptRunType)Enum.Parse(typeof(MigrationScriptRunType), RunType),
+            runTypeParser(RunType),
             Version,
-            Applied,
+            dateParser(Applied),
             ScriptHash);
     }
 }
