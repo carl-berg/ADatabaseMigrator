@@ -12,33 +12,34 @@ public abstract class MigratorBase<TMigration, TMigrationScript, TMigrationJourn
 {
     public MigratorBase(
         IMigrationScriptLoader<TMigrationScript> scriptLoader,
-        IMigrationsJournalLoader<TMigrationJournal, TMigration> journalLoader,
+        IMigrationJournalManager<TMigrationJournal, TMigration, TMigrationScript> journalManager,
         IMigrationScriptRunner<TMigrationScript> scriptRunner)
     {
         ScriptLoader = scriptLoader;
-        JournalLoader = journalLoader;
+        JournalManager = journalManager;
         ScriptRunner = scriptRunner;
     }
 
     protected IMigrationScriptLoader<TMigrationScript> ScriptLoader { get; }
-    protected IMigrationsJournalLoader<TMigrationJournal, TMigration> JournalLoader { get; }
+    protected IMigrationJournalManager<TMigrationJournal, TMigration, TMigrationScript> JournalManager { get; }
     protected IMigrationScriptRunner<TMigrationScript> ScriptRunner { get; }
 
     public virtual async Task Migrate(CancellationToken cancellationToken)
     {
         var allMigrations = await ScriptLoader.Load();
-        var journal = await JournalLoader.Load();
+        var journal = await JournalManager.Load();
         var scriptsToRun = allMigrations.Where(x => ShouldRunScript(x, journal));
         await RunScripts(scriptsToRun, cancellationToken);
     }
 
     protected abstract bool ShouldRunScript(TMigrationScript script, TMigrationJournal journal);
 
-    protected virtual async Task RunScripts(IEnumerable<TMigrationScript> scripts, CancellationToken cancellationToken)
+    protected virtual async Task RunScripts(IEnumerable<TMigrationScript> migrationScripts, CancellationToken cancellationToken)
     {
-        foreach (var script in scripts)
+        foreach (var migrationScript in migrationScripts)
         {
-            await ScriptRunner.Run(script, cancellationToken);
+            var appendJournalScript = JournalManager.AddJournalScript(migrationScript);
+            await ScriptRunner.Run(migrationScript, appendJournalScript, cancellationToken);
         }
     }
 }

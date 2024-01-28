@@ -6,8 +6,8 @@ public class Migrator : MigratorBase<Migration, MigrationScript, MigrationJourna
 {
     public Migrator(
         IMigrationScriptLoader<MigrationScript> scriptLoader,
-        IMigrationsJournalLoader<MigrationJournal, Migration> journalLoader,
-        IMigrationScriptRunner<MigrationScript> scriptRunner) : base(scriptLoader, journalLoader, scriptRunner) { }
+        IMigrationJournalManager<MigrationJournal, Migration, MigrationScript> journalManager,
+        IMigrationScriptRunner<MigrationScript> scriptRunner) : base(scriptLoader, journalManager, scriptRunner) { }
 
     protected override bool ShouldRunScript(MigrationScript script, MigrationJournal journal) => script switch
     {

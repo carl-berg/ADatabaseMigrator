@@ -1,0 +1,14 @@
+﻿[
+  {
+    Name: Script_1,
+    Version: 1.0.0,
+    RunType: RunOnce,
+    ScriptHash: hash_1
+  },
+  {
+    Name: Script_2,
+    Version: 1.0.0,
+    RunType: RunOnce,
+    ScriptHash: hash_2
+  }
+]

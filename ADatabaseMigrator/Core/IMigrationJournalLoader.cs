@@ -2,7 +2,7 @@
 
 namespace ADatabaseMigrator.Core;
 
-public interface IMigrationsJournalLoader<TMigrationJournal, TMigration>
+public interface IMigrationJournalLoader<TMigrationJournal, TMigration>
     where TMigrationJournal : IMigrationJournal<TMigration>
     where TMigration : IMigration
 {

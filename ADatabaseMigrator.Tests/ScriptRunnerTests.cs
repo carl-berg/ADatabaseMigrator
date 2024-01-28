@@ -1,7 +1,6 @@
-﻿using ADatabaseMigrator.Hashing;
-using ADatabaseMigrator.ScriptLoading.EmbeddedResources;
-using ADatabaseMigrator.ScriptLoading.EmbeddedResources.Versioning;
-using ADatabaseMigrator.Tests.Core;
+﻿using ADatabaseMigrator.Tests.Core;
+using Dapper;
+using Shouldly;
 
 namespace ADatabaseMigrator.Tests;
 
@@ -10,38 +9,66 @@ public class ScriptRunnerTests(DatabaseFixture fixture) : DatabaseTest(fixture)
     [Fact]
     public async Task Test_ScriptRunner_Execution()
     {
-        //TODO: Replace these scripts with inline sql scripts so this test doesn't depend on how embedded script loader functionality
-        var scriptLoader = new EmbeddedResourceScriptLoader(new MD5ScriptHasher(), configure => configure
-            .UsingAssemblyFromType<EmbeddedResourceTests>()
-                .AddNamespaces<VersionFromPathVersionLoader>(MigrationScriptRunType.RunOnce, "Scripts.Migrations")
-                .AddNamespaces<VersionFromAssemblyVersionLoader>(MigrationScriptRunType.RunIfChanged, "Scripts.RunIfChanged")
-                .AddNamespaces<VersionFromAssemblyVersionLoader>(MigrationScriptRunType.RunAlways, "Scripts.RunAlways"));
-
         using var connection = Fixture.CreateNewConnection();
-
         var scriptRunner = new MigrationScriptRunner(connection);
 
-        var scripts = await scriptLoader.Load();
+        var script = new MigrationScript(
+            name: "My script",
+            runType: MigrationScriptRunType.RunOnce,
+            version: "1.0.0",
+            script:
+                """
+                CREATE TABLE ScriptRunnerTest_Log(
+                    Id INT NOT NULL PRIMARY KEY,
+                    Log NVARCHAR(50) NOT NULL
+                )
+                """,
+            scriptHash: "hash");
 
-        foreach (var script in scripts)
-        {
-            await scriptRunner.Run(script, CancellationToken.None);
-        }
+        var appendJournalScript = "INSERT INTO ScriptRunnerTest_Log(Id, Log) VALUES(1, 'Journal_insert')";
+        await scriptRunner.Run(script, appendJournalScript, CancellationToken.None);
 
-        //TODO: Verify scripts were executed
-
-        //TODO: Verify journals were inserted
+        // Verify script and log was excuted
+        var logs = await connection.QueryAsync<(int Id, string Log)>("SELECT * FROM ScriptRunnerTest_Log");
+        logs.ShouldHaveSingleItem().ShouldSatisfyAllConditions(
+            log => log.Id.ShouldBe(1),
+            log => log.Log.ShouldBe("Journal_insert"));
     }
 
-    public Task Test_Individual_Transaction_Handling()
+    [Fact]
+    public async Task Test_Enlisted_Transaction_Handling()
     {
-        // TODO: Test that an inidividual script failure doesn't roll back already inserted scripts
-        return Task.CompletedTask;
-    }
+        using var connection = Fixture.CreateNewConnection();
+        using var transaction = connection.BeginTransaction();
+        var scriptRunner = new MigrationScriptRunner(connection, transaction);
 
-    public Task Test_Enlisted_Transaction_Handling()
-    {
-        // TODO: Test that an inidividual script failure roll back all already inserted scripts
-        return Task.CompletedTask;
+        var script = new MigrationScript(
+            name: "My script",
+            runType: MigrationScriptRunType.RunOnce,
+            version: "1.0.0",
+            script:
+                """
+                CREATE TABLE ScriptRunner_Enlisted_Transaction_Test_Log(
+                    Id INT NOT NULL PRIMARY KEY,
+                    Log NVARCHAR(50) NOT NULL
+                )
+                """,
+            scriptHash: "hash");
+
+        var appendJournalScript = "INSERT INTO ScriptRunner_Enlisted_Transaction_Test_Log(Id, Log) VALUES(1, 'Journal_insert')";
+        await scriptRunner.Run(script, appendJournalScript, CancellationToken.None);
+
+        await transaction.RollbackAsync();
+
+        // Verify no table was created
+        var numberOfMatchingTables = await connection.QuerySingleAsync<int>(
+            """
+            SELECT COUNT(1) 
+            FROM INFORMATION_SCHEMA.TABLES 
+            WHERE TABLE_SCHEMA = 'dbo' 
+            AND TABLE_NAME = 'ScriptRunner_Enlisted_Transaction_Test_Log'
+            """);
+
+        numberOfMatchingTables.ShouldBe(0);
     }
 }

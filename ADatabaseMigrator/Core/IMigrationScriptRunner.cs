@@ -6,7 +6,7 @@ namespace ADatabaseMigrator.Core;
 public interface IMigrationScriptRunner<TMigrationScript> where TMigrationScript : IMigrationScript
 {
     /// <summary>
-    /// Run migration script and update journal
+    /// Run migration script and append journal
     /// </summary>
-    Task Run(TMigrationScript script, CancellationToken cancellationToken);
+    Task Run(TMigrationScript script, string appendJournalScript, CancellationToken cancellationToken);
 }

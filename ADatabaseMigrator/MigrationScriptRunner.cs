@@ -1,15 +1,16 @@
 ﻿using ADatabaseMigrator.Core;
 using System;
-using System.Collections.ObjectModel;
 using System.Data.Common;
 using System.Threading;
 using System.Threading.Tasks;
 
 namespace ADatabaseMigrator;
 
-public class MigrationScriptRunner(DbConnection _connection, DbTransaction? _transaction = null) : IMigrationScriptRunner<MigrationScript>
+public class MigrationScriptRunner(
+    DbConnection _connection, 
+    DbTransaction? _transaction = null) : IMigrationScriptRunner<MigrationScript>
 {
-    public virtual async Task Run(MigrationScript migrationScript, CancellationToken cancellationToken)
+    public virtual async Task Run(MigrationScript migrationScript, string appendJournalScript, CancellationToken cancellationToken)
     {
         try
         { 
@@ -17,12 +18,14 @@ public class MigrationScriptRunner(DbConnection _connection, DbTransaction? _tra
             {
                 // Enlisting in provided transaction, caller handles committing
                 await ExecuteScript(migrationScript.Script, _transaction);
+                await ExecuteScript(appendJournalScript, _transaction);
             }
             else
             {
                 // No transaction provided, we create and commit our own for this script
                 using var transaction = _connection.BeginTransaction();
                 await ExecuteScript(migrationScript.Script, transaction);
+                await ExecuteScript(appendJournalScript, transaction);
                 transaction.Commit();
             }
         }
@@ -38,8 +41,6 @@ public class MigrationScriptRunner(DbConnection _connection, DbTransaction? _tra
         command.Transaction = transaction;
         command.CommandText = script;
         await command.ExecuteNonQueryAsync();
-
-        //TODO: We should add a journal entry here
     }
 
     public class ScriptExecutionException : Exception

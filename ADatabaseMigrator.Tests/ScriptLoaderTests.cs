@@ -4,15 +4,15 @@ using ADatabaseMigrator.ScriptLoading.EmbeddedResources.Versioning;
 
 namespace ADatabaseMigrator.Tests;
 
-public class EmbeddedResourceTests
+public class ScriptLoaderTests
 {
     [Theory]
     [InlineData("Scripts.Migrations")]
     [InlineData("Scripts.MigrationsAlternative")]
-    public async Task Scipts_have_expected_version_based_order(string migrationNamespace)
+    public async Task Scripts_have_expected_version_based_order(string migrationNamespace)
     {
         var scriptLoader = new EmbeddedResourceScriptLoader(new MD5ScriptHasher(), configure => configure
-            .UsingAssemblyFromType<EmbeddedResourceTests>()
+            .UsingAssemblyFromType<ScriptLoaderTests>()
                 .AddNamespaces<VersionFromPathVersionLoader>(MigrationScriptRunType.RunOnce, migrationNamespace)
                 .AddNamespaces<VersionFromAssemblyVersionLoader>(MigrationScriptRunType.RunIfChanged, "Scripts.RunIfChanged")
                 .AddNamespaces<VersionFromAssemblyVersionLoader>(MigrationScriptRunType.RunAlways, "Scripts.RunAlways"));
