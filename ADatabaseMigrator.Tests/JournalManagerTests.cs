@@ -45,7 +45,8 @@ public class JournalManagerTests(DatabaseFixture fixture) : DatabaseTest(fixture
         var journalEntries = await connection.QueryAsync<JournalEntry>(
             "SELECT Name, Version, Applied, Type, Hash FROM SchemaVersionJournal");
 
-        await Verify(journalEntries);
+        await Verify(journalEntries)
+            .ScrubMember<JournalEntry>(x => x.Applied);
     }
 
     [Fact]
@@ -74,7 +75,14 @@ public class JournalManagerTests(DatabaseFixture fixture) : DatabaseTest(fixture
 
         var journal = await journalManager.Load();
 
-        await Verify(journal);
+        await Verify(journal)
+            .ScrubMember<Migration>(x => x.Applied);
+
+        // Verify utc dates
+        foreach(var entry in journal)
+        {
+            entry.Applied.Kind.ShouldBe(DateTimeKind.Utc);
+        }
     }
 
     private record JournalEntry(string Name, string Version, DateTime Applied, string Type, string Hash);

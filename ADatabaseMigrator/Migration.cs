@@ -5,11 +5,12 @@ namespace ADatabaseMigrator;
 
 public class Migration : IMigration
 {
-    public Migration(string name, MigrationScriptRunType runType, IComparable version, string scriptHash)
+    public Migration(string name, MigrationScriptRunType runType, IComparable version, DateTime applied, string scriptHash)
     {
         Name = name;
         Version = version;
         RunType = runType;
+        Applied = applied;
         ScriptHash = scriptHash;
     }
 
@@ -20,6 +21,11 @@ public class Migration : IMigration
     /// Script version
     /// </summary>
     public IComparable Version { get; }
+
+    /// <summary>
+    /// Applied timestamp (UTC)
+    /// </summary>
+    public DateTime Applied { get; }
 
     public MigrationScriptRunType RunType { get; }
 

@@ -40,7 +40,7 @@ public class MigrationScriptJournalManager(DbConnection _connection) : IMigratio
             {
                 Version = reader.GetString(0),
                 Name = reader.GetString(1),
-                Applied = DateTime.Parse(reader["Applied"].ToString(), provider: null, DateTimeStyles.AssumeUniversal),
+                Applied = DateTime.Parse(reader["Applied"].ToString(), CultureInfo.InvariantCulture, DateTimeStyles.AssumeUniversal | DateTimeStyles.AdjustToUniversal),
                 ScriptHash = reader.GetString(3),
                 RunType = reader.GetString(4),
             });
@@ -82,6 +82,7 @@ public class MigrationScriptJournalManager(DbConnection _connection) : IMigratio
             Name,
             (MigrationScriptRunType)Enum.Parse(typeof(MigrationScriptRunType), RunType),
             Version,
+            Applied,
             ScriptHash);
     }
 }
