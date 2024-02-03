@@ -24,12 +24,13 @@ public abstract class MigratorBase<TMigration, TMigrationScript, TMigrationJourn
     protected IMigrationJournalManager<TMigrationJournal, TMigration, TMigrationScript> JournalManager { get; }
     protected IMigrationScriptRunner<TMigrationScript> ScriptRunner { get; }
 
-    public virtual async Task Migrate(CancellationToken cancellationToken)
+    public virtual async Task<IEnumerable<TMigrationScript>> Migrate(CancellationToken cancellationToken)
     {
         var allMigrations = await ScriptLoader.Load();
         var journal = await JournalManager.Load();
         var scriptsToRun = allMigrations.Where(x => ShouldRunScript(x, journal));
         await RunScripts(scriptsToRun, cancellationToken);
+        return scriptsToRun;
     }
 
     protected abstract bool ShouldRunScript(TMigrationScript script, TMigrationJournal journal);
