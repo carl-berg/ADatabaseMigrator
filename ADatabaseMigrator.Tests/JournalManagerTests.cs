@@ -24,9 +24,6 @@ public class JournalManagerTests(DatabaseFixture fixture) : DatabaseTest(fixture
         var journalManager = new MigrationScriptJournalManager(connection);
         await journalManager.CreateJournalTableIfNotExists();
 
-        // Ensure schema version journal is empty
-        await connection.ExecuteAsync("DELETE FROM SchemaVersionJournal");
-
         await connection.ExecuteAsync(journalManager.AddJournalScript(new MigrationScript(
             name: "Script_1", 
             runType: MigrationScriptRunType.RunOnce,
@@ -55,9 +52,6 @@ public class JournalManagerTests(DatabaseFixture fixture) : DatabaseTest(fixture
         using var connection = Fixture.CreateNewConnection();
         var journalManager = new MigrationScriptJournalManager(connection);
         await journalManager.CreateJournalTableIfNotExists();
-
-        // Ensure schema version journal is empty
-        await connection.ExecuteAsync("DELETE FROM SchemaVersionJournal");
 
         await connection.ExecuteAsync(journalManager.AddJournalScript(new MigrationScript(
             name: "Script_1",

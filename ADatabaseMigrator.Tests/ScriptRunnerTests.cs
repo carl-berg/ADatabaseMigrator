@@ -48,14 +48,14 @@ public class ScriptRunnerTests(DatabaseFixture fixture) : DatabaseTest(fixture)
             version: "1.0.0",
             script:
                 """
-                CREATE TABLE ScriptRunner_Enlisted_Transaction_Test_Log(
+                CREATE TABLE ScriptRunnerTest_Log(
                     Id INT NOT NULL PRIMARY KEY,
                     Log NVARCHAR(50) NOT NULL
                 )
                 """,
             scriptHash: "hash");
 
-        var appendJournalScript = "INSERT INTO ScriptRunner_Enlisted_Transaction_Test_Log(Id, Log) VALUES(1, 'Journal_insert')";
+        var appendJournalScript = "INSERT INTO ScriptRunnerTest_Log(Id, Log) VALUES(1, 'Journal_insert')";
         await scriptRunner.Run(script, appendJournalScript, CancellationToken.None);
 
         await transaction.RollbackAsync();
@@ -66,7 +66,7 @@ public class ScriptRunnerTests(DatabaseFixture fixture) : DatabaseTest(fixture)
             SELECT COUNT(1) 
             FROM INFORMATION_SCHEMA.TABLES 
             WHERE TABLE_SCHEMA = 'dbo' 
-            AND TABLE_NAME = 'ScriptRunner_Enlisted_Transaction_Test_Log'
+            AND TABLE_NAME = 'ScriptRunnerTest_Log'
             """);
 
         numberOfMatchingTables.ShouldBe(0);

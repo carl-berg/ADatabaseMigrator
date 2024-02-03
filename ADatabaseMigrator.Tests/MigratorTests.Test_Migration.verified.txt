@@ -1,0 +1,41 @@
+﻿{
+  tables: [
+    SchemaVersionJournal,
+    Person,
+    RunLog,
+    People
+  ],
+  journal: [
+    {
+      Version: 1.0.0,
+      Name: ADatabaseMigrator.Tests.Scripts.Migrations._001._00._0.001_Person.sql,
+      Hash: 30c8755930eff185cdaebf09c22c97d5
+    },
+    {
+      Version: 1.0.0,
+      Name: ADatabaseMigrator.Tests.Scripts.Migrations._001._00._0.002_RunLog.sql,
+      Hash: 0a388c6ed964846af5e9228538f3d4b3
+    },
+    {
+      Version: 1.0.2,
+      Name: ADatabaseMigrator.Tests.Scripts.Migrations._001._00._2.001_PersonAge.sql,
+      Hash: 95f7cc977a1609346280c39c5c5100f1
+    },
+    {
+      Version: 1.0.12,
+      Name: ADatabaseMigrator.Tests.Scripts.Migrations._001._00._12.001_PersonBirthDate.sql,
+      Hash: 97aaca750ae30d54e5230b87d9e29c65
+    },
+    {
+      Version: 1.0.0.0,
+      Name: ADatabaseMigrator.Tests.Scripts.RunIfChanged._001_Views.001_People.sql,
+      Hash: 4fbc10f13535e283bc5f473af39b2074
+    },
+    {
+      Version: 1.0.0.0,
+      Name: ADatabaseMigrator.Tests.Scripts.RunAlways.001_RunLog.sql,
+      Hash: a168741436962aaaafd0156a29f92be1
+    }
+  ],
+  runLogEntries: 1
+}
