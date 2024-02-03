@@ -25,12 +25,12 @@ public class MigratorTests(DatabaseFixture fixture) : DatabaseTest(fixture)
         await migrator.Migrate(CancellationToken.None);
 
         var tables = await connection.QueryAsync<string>("SELECT table_name FROM INFORMATION_SCHEMA.TABLES");
-        var journal = await connection.QueryAsync<SchemaVersionJournalDto>("SELECT Version, Name, Hash FROM SchemaVersionJournal");
+        var journal = await connection.QueryAsync<SchemaVersionJournalDto>("SELECT Version, Name, Hash, Type FROM SchemaVersionJournal");
         var runLogEntries = await connection.QuerySingleAsync<int>("SELECT COUNT(1) FROM RunLog");
 
         await Verify(new { tables, journal, runLogEntries })
             .DontScrubGuids(/* Verify mistakes hashes for guids and scrubs them */);
     }
 
-    private record SchemaVersionJournalDto(string Version, string Name, string Hash);
+    private record SchemaVersionJournalDto(string Version, string Name, string Hash, MigrationScriptRunType Type);
 }

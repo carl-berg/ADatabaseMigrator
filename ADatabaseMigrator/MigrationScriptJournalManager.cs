@@ -4,7 +4,6 @@ using System.Collections.Generic;
 using System.Data.Common;
 using System.Globalization;
 using System.Linq;
-using System.Management;
 using System.Threading.Tasks;
 
 namespace ADatabaseMigrator;
@@ -76,11 +75,11 @@ public class MigrationScriptJournalManager(DbConnection _connection) : IMigratio
 
     private class MigrationJournalEntry
     {
-        public string Version { get; set; }
-        public string Name { get; set; }
-        public string Applied { get; set; }
-        public string RunType { get; set; }
-        public string ScriptHash { get; set; }
+        public string Version { get; set; } = default!;
+        public string Name { get; set; } = default!;
+        public string Applied { get; set; } = default!;
+        public string RunType { get; set; } = default!;
+        public string ScriptHash { get; set; } = default!;
 
         public Migration ToMigration(Func<string, DateTime> dateParser, Func<string, MigrationScriptRunType> runTypeParser) => new(
             Name,
