@@ -1,4 +1,5 @@
-﻿using ADatabaseMigrator.Tests.Core;
+﻿using ADatabaseMigrator.SqlServer;
+using ADatabaseMigrator.Tests.Core;
 using Dapper;
 using Shouldly;
 
@@ -70,5 +71,51 @@ public class ScriptRunnerTests(DatabaseFixture fixture) : DatabaseTest(fixture)
             """);
 
         numberOfMatchingTables.ShouldBe(0);
+    }
+
+    [Fact]
+    public async Task Test_Batched_ScriptRunner_Execution()
+    {
+        using var connection = Fixture.CreateNewConnection();
+        var scriptRunner = new SqlServerMigrationScriptRunner(connection);
+
+        var script = new MigrationScript(
+            name: "My script",
+            runType: MigrationScriptRunType.RunOnce,
+            version: "1.0.0",
+            script:
+                """
+                CREATE TABLE Table_A(
+                    Id INT NOT NULL PRIMARY KEY,
+                    Name NVARCHAR(50) NOT NULL
+                )
+                GO
+
+                CREATE TABLE Table_B(
+                    Id INT NOT NULL PRIMARY KEY,
+                    Name NVARCHAR(50) NOT NULL
+                )
+                GO
+
+                INSERT INTO Table_A(Id, Name) VALUES(1, 'A')
+                INSERT INTO Table_B(Id, Name) VALUES(1, 'B')
+                """,
+            scriptHash: "hash");
+
+        var appendJournalScript = "SELECT 0";
+        await scriptRunner.Run(script, appendJournalScript, CancellationToken.None);
+
+        // Verify execution
+        var results = await connection.QueryAsync<(int Id, string Name)>(
+            """
+            SELECT Id, Name FROM Table_A 
+            UNION 
+            SELECT Id, Name FROM Table_B
+            """);
+
+        results.ShouldSatisfyAllConditions(
+            rows => rows.Count().ShouldBe(2),
+            rows => rows.ShouldContain(x => x.Name == "A"),
+            rows => rows.ShouldContain(x => x.Name == "B"));
     }
 }

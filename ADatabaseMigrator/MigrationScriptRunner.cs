@@ -17,15 +17,15 @@ public class MigrationScriptRunner(
             if (_transaction is { })
             {
                 // Enlisting in provided transaction, caller handles committing
-                await ExecuteScript(migrationScript.Script, _transaction);
-                await ExecuteScript(appendJournalScript, _transaction);
+                await ExecuteScript(migrationScript.Name, migrationScript.Script, _transaction);
+                await ExecuteScript(migrationScript.Name, appendJournalScript, _transaction);
             }
             else
             {
                 // No transaction provided, we create and commit our own for this script
                 using var transaction = _connection.BeginTransaction();
-                await ExecuteScript(migrationScript.Script, transaction);
-                await ExecuteScript(appendJournalScript, transaction);
+                await ExecuteScript(migrationScript.Name, migrationScript.Script, transaction);
+                await ExecuteScript(migrationScript.Name, appendJournalScript, transaction);
                 transaction.Commit();
             }
         }
@@ -35,7 +35,7 @@ public class MigrationScriptRunner(
         }
     }
 
-    protected virtual async Task ExecuteScript(string script, DbTransaction transaction)
+    protected virtual async Task ExecuteScript(string scriptName, string script, DbTransaction transaction)
     {
         using var command = _connection.CreateCommand();
         command.Transaction = transaction;
