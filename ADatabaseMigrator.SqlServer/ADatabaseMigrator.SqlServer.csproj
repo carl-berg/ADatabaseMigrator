@@ -4,7 +4,28 @@
     <TargetFramework>netstandard2.0</TargetFramework>
     <Nullable>enable</Nullable>
     <LangVersion>12</LangVersion>
+    <Version>0.1.0</Version>
   </PropertyGroup>
+
+  <PropertyGroup>
+    <PackageId>ADatabaseMigrator.SqlServer</PackageId>
+    <Authors>Carl Berg</Authors>
+    <Copyright>Copyright (c) $([System.DateTime]::Now.Year) Carl Berg</Copyright>
+    <Description>ADatabaseMigrator.SqlServer a plugin to ADatabaseMigrator that supports parsing batched statements for Sql Server</Description>
+    <PackageTags>ADatabaseMigrator.SqlServer;ADatabaseMigrator;Database;Migration;SqlServer</PackageTags>
+    <PackageProjectUrl>https://github.com/carl-berg/adatabasemigrator</PackageProjectUrl>
+    <PackageIcon>icon.png</PackageIcon>
+    <PackageLicenseFile>LICENSE</PackageLicenseFile>
+    <IncludeSymbols>true</IncludeSymbols>
+    <SymbolPackageFormat>snupkg</SymbolPackageFormat>
+    <PackageReadmeFile>README.md</PackageReadmeFile>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <None Include="..\LICENSE" Pack="true" PackagePath="" />
+    <None Include="..\icon.png" Pack="true" PackagePath="" />
+    <None Include="..\README.md" Pack="true" PackagePath="" />
+  </ItemGroup>
 
   <ItemGroup>
     <PackageReference Include="Microsoft.SqlServer.Management.SqlParser" Version="171.24.0" />
@@ -13,5 +34,5 @@
   <ItemGroup>
     <ProjectReference Include="..\ADatabaseMigrator\ADatabaseMigrator.csproj" />
   </ItemGroup>
-
+  
 </Project>

@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Data.Common;
 using System.Globalization;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace ADatabaseMigrator;
@@ -21,9 +22,9 @@ public class MigrationScriptJournalManager(DbConnection _connection) : IMigratio
             '{script.RunType}')
         """;
 
-    public async Task<MigrationJournal> Load()
+    public async Task<MigrationJournal> Load(CancellationToken? cancellationToken = default)
     {
-        await CreateJournalTableIfNotExists();
+        await CreateJournalTableIfNotExists(cancellationToken);
         using var command = _connection.CreateCommand();
         command.CommandText =
             """
@@ -31,10 +32,10 @@ public class MigrationScriptJournalManager(DbConnection _connection) : IMigratio
             FROM dbo.SchemaVersionJournal
             """;
 
-        using var reader = await command.ExecuteReaderAsync();
+        using var reader = await command.ExecuteReaderAsync(cancellationToken ?? CancellationToken.None);
         var journalEntries = new List<MigrationJournalEntry>();
 
-        while (await reader.ReadAsync().ConfigureAwait(false))
+        while (await reader.ReadAsync(cancellationToken ?? CancellationToken.None).ConfigureAwait(false))
         {
             journalEntries.Add(new MigrationJournalEntry
             {
@@ -51,7 +52,7 @@ public class MigrationScriptJournalManager(DbConnection _connection) : IMigratio
             .ToList());
     }
 
-    public virtual async Task CreateJournalTableIfNotExists()
+    public virtual async Task CreateJournalTableIfNotExists(CancellationToken? cancellationToken = default)
     {
         using var command = _connection.CreateCommand();
         command.CommandText =
@@ -67,11 +68,15 @@ public class MigrationScriptJournalManager(DbConnection _connection) : IMigratio
             );
         END
         """;
-        await command.ExecuteNonQueryAsync();
+        await command.ExecuteNonQueryAsync(cancellationToken ?? CancellationToken.None);
     }
 
     protected virtual DateTime ParseDate(string value) => DateTime.Parse(value, CultureInfo.InvariantCulture, DateTimeStyles.AssumeUniversal | DateTimeStyles.AdjustToUniversal);
-    protected virtual MigrationScriptRunType ParseRunType(string value) => (MigrationScriptRunType)Enum.Parse(typeof(MigrationScriptRunType), value);
+    protected virtual MigrationScriptRunType ParseRunType(string value) => value switch 
+    {
+        "Migration" => MigrationScriptRunType.RunOnce, // Provided for GalacticWasteManagement support
+        _ => (MigrationScriptRunType)Enum.Parse(typeof(MigrationScriptRunType), value)
+    };
 
     private class MigrationJournalEntry
     {

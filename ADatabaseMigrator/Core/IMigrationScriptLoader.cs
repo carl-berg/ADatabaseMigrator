@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace ADatabaseMigrator.Core;
@@ -8,5 +9,5 @@ public interface IMigrationScriptLoader<TMigrationScript> where TMigrationScript
     /// <summary>
     /// Load all migration scripts
     /// </summary>
-    Task<IReadOnlyList<TMigrationScript>> Load();
+    Task<IReadOnlyList<TMigrationScript>> Load(CancellationToken? cancellationToken = default);
 }

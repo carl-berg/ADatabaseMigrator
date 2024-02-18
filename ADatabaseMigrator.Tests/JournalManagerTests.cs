@@ -11,7 +11,7 @@ public class JournalManagerTests(DatabaseFixture fixture) : DatabaseTest(fixture
     {
         using var connection = Fixture.CreateNewConnection();
         var journalManager = new MigrationScriptJournalManager(connection);
-        await journalManager.CreateJournalTableIfNotExists();
+        await journalManager.CreateJournalTableIfNotExists(CancellationToken.None);
 
         // Verify SchemaVersionJournal table exists (and can be queried)
         await Should.NotThrowAsync(connection.QuerySingleAsync<int>("SELECT COUNT(1) FROM SchemaVersionJournal"));
@@ -22,7 +22,7 @@ public class JournalManagerTests(DatabaseFixture fixture) : DatabaseTest(fixture
     {
         using var connection = Fixture.CreateNewConnection();
         var journalManager = new MigrationScriptJournalManager(connection);
-        await journalManager.CreateJournalTableIfNotExists();
+        await journalManager.CreateJournalTableIfNotExists(CancellationToken.None);
 
         await connection.ExecuteAsync(journalManager.AddJournalScript(new MigrationScript(
             name: "Script_1", 
@@ -51,7 +51,7 @@ public class JournalManagerTests(DatabaseFixture fixture) : DatabaseTest(fixture
     {
         using var connection = Fixture.CreateNewConnection();
         var journalManager = new MigrationScriptJournalManager(connection);
-        await journalManager.CreateJournalTableIfNotExists();
+        await journalManager.CreateJournalTableIfNotExists(CancellationToken.None);
 
         await connection.ExecuteAsync(journalManager.AddJournalScript(new MigrationScript(
             name: "Script_1",
@@ -67,7 +67,7 @@ public class JournalManagerTests(DatabaseFixture fixture) : DatabaseTest(fixture
             script: string.Empty,
             scriptHash: "hash_2")));
 
-        var journal = await journalManager.Load();
+        var journal = await journalManager.Load(CancellationToken.None);
 
         await Verify(journal)
             .ScrubMember<Migration>(x => x.Applied);

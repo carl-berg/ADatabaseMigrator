@@ -6,6 +6,7 @@ using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace ADatabaseMigrator.ScriptLoading.EmbeddedResources;
@@ -21,7 +22,7 @@ public class EmbeddedResourceScriptLoader : IMigrationScriptLoader<MigrationScri
     protected List<AssemblyEmbeddedResources> Resources { get; } = new();
     protected IScriptHasher ScriptHasher { get; }
 
-    public virtual async Task<IReadOnlyList<MigrationScript>> Load()
+    public virtual async Task<IReadOnlyList<MigrationScript>> Load(CancellationToken? cancellationToken = default)
     {
         var scripts = new List<MigrationScript>();
         foreach (var assemblyResources in Resources)
