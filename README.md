@@ -4,7 +4,7 @@ A small package run and maintain database migration scripts.
 Contains the following packages:
 
 **ADatabaseMigrator**
-Contains the `Migrator` class which you instantiate to run your migrations. The needs 3 things in order to be instantiated:
+Contains the `Migrator` class which you instantiate to run your migrations. The class needs 3 things in order to be instantiated:
 - A script loader, that can find the script files you want to run.
 - A journal manager, that can load the already executed scripts from the database.
 - A script runner that can execute scripts.
@@ -51,3 +51,4 @@ Contains `SqlServerMigrationScriptRunner` which you can use as a script runner i
      - `AddNamespaces<VersionFromPathVersionLoader>(MigrationScriptRunType.RunOnce, "Scripts.Migrations")`, specifies that we want to load scripts from inside the folder `Scripts\Migrations`, we want them to be run only once and we want to extract the version number from the the path.
      - `AddNamespaces<VersionFromAssemblyVersionLoader>(MigrationScriptRunType.RunIfChanged, "Scripts.RunIfChanged")` specifies we want to load scripts from inside the folder `Scripts\RunIfChanged`, we want them to be run every time they are changed (when the hash of the file changes) and we use version number from the previously specified assembly.
      - `AddNamespaces<VersionFromAssemblyVersionLoader>(MigrationScriptRunType.RunAlways, "Scripts.RunAlways")` specifies that we want to load scripts from inside the folder `Scripts\RunAlways`, we want them to be run every time we run the migrator and we use version number from the previously specified assembly.
+     - Note that the order of the `AddNamespaces` invocations specifies the execution order, so in our example the _Migrations_ are executed first, then _RunIfChanged_ and last _RunAlways_. Within a namespace the migrations found are executed first in order of version, then in order of embedded resource name.
