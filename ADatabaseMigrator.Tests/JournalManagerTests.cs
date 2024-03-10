@@ -1,4 +1,5 @@
-﻿using ADatabaseMigrator.Tests.Core;
+﻿using ADatabaseMigrator.Journaling;
+using ADatabaseMigrator.Tests.Core;
 using Dapper;
 using Shouldly;
 

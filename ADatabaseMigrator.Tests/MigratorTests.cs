@@ -1,4 +1,5 @@
 ﻿using ADatabaseMigrator.Hashing;
+using ADatabaseMigrator.Journaling;
 using ADatabaseMigrator.ScriptLoading.EmbeddedResources;
 using ADatabaseMigrator.ScriptLoading.EmbeddedResources.Versioning;
 using ADatabaseMigrator.Tests.Core;

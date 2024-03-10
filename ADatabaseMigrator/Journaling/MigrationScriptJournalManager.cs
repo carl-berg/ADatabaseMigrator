@@ -2,12 +2,11 @@
 using System;
 using System.Collections.Generic;
 using System.Data.Common;
-using System.Globalization;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace ADatabaseMigrator;
+namespace ADatabaseMigrator.Journaling;
 
 public class MigrationScriptJournalManager(DbConnection _connection) : IMigrationJournalManager<MigrationJournal, Migration, MigrationScript>
 {
@@ -33,22 +32,21 @@ public class MigrationScriptJournalManager(DbConnection _connection) : IMigratio
             """;
 
         using var reader = await command.ExecuteReaderAsync(cancellationToken ?? CancellationToken.None);
-        var journalEntries = new List<MigrationJournalEntry>();
+        var journalEntries = new List<(string Version, string Name, DateTime Applied, string ScriptHash, string RunType)>();
 
         while (await reader.ReadAsync(cancellationToken ?? CancellationToken.None).ConfigureAwait(false))
         {
-            journalEntries.Add(new MigrationJournalEntry
-            {
-                Version = reader.GetString(0),
-                Name = reader.GetString(1),
-                Applied = reader[nameof(MigrationJournalEntry.Applied)].ToString(),
-                ScriptHash = reader.GetString(3),
-                RunType = reader.GetString(4),
-            });
+            journalEntries.Add((
+                reader.GetString(0),
+                reader.GetString(1),
+                DateTime.SpecifyKind(reader.GetDateTime(2), DateTimeKind.Utc),
+                reader.GetString(3),
+                reader.GetString(4)
+            ));
         }
 
         return new MigrationJournal(journalEntries
-            .Select(x => x.ToMigration(ParseDate, ParseRunType))
+            .Select(x => ParseMigration(x.Version, x.Name, x.Applied, x.ScriptHash, x.RunType))
             .ToList());
     }
 
@@ -71,26 +69,13 @@ public class MigrationScriptJournalManager(DbConnection _connection) : IMigratio
         await command.ExecuteNonQueryAsync(cancellationToken ?? CancellationToken.None);
     }
 
-    protected virtual DateTime ParseDate(string value) => DateTime.Parse(value, CultureInfo.InvariantCulture, DateTimeStyles.AssumeUniversal | DateTimeStyles.AdjustToUniversal);
-    protected virtual MigrationScriptRunType ParseRunType(string value) => value switch 
-    {
-        "Migration" => MigrationScriptRunType.RunOnce, // Provided for GalacticWasteManagement support
-        _ => (MigrationScriptRunType)Enum.Parse(typeof(MigrationScriptRunType), value)
-    };
-
-    private class MigrationJournalEntry
-    {
-        public string Version { get; set; } = default!;
-        public string Name { get; set; } = default!;
-        public string Applied { get; set; } = default!;
-        public string RunType { get; set; } = default!;
-        public string ScriptHash { get; set; } = default!;
-
-        public Migration ToMigration(Func<string, DateTime> dateParser, Func<string, MigrationScriptRunType> runTypeParser) => new(
-            Name,
-            runTypeParser(RunType),
-            Version,
-            dateParser(Applied),
-            ScriptHash);
-    }
+    protected virtual Migration ParseMigration(string version, string name, DateTime applied, string scriptHash, string runType) =>
+        new(
+            name,
+            Enum.TryParse<MigrationScriptRunType>(runType, out var parsedRunType)
+                ? parsedRunType
+                : throw new ArgumentException($"Migration {name} has a RunType '{runType}' which not a valid {nameof(MigrationScriptRunType)}"),
+            version,
+            applied,
+            scriptHash);
 }
