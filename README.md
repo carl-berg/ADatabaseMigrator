@@ -1,25 +1,7 @@
 # ADatabaseMigrator - An Appeasing Database Migrator
-A small and flexible package you can use run database migration scripts.
-
+A small and flexible package you can use to run database migration scripts.
 
 <img src="./icon.png" alt="ADatabaseMigrator Icon" width="50%" height="50%">
-
-
-Contains the following packages:
-
-**ADatabaseMigrator**
-Contains the `Migrator` class which you instantiate to run your migrations. The class needs 3 things in order to be instantiated:
-- A script loader, that can find the script files you want to run.
-- A journal manager, that can load already executed scripts from the database.
-- A script runner that can execute scripts.
-
-You can write your own script loaders, journal managers and scripts runners, but the package comes with some predefined classes to use or extend:
-- `EmbeddedResourceScriptLoader` is a script loader that loads scripts from embedded resources in one or more assemblies. This class also requires a script hasher in order to create a unique hash for the loaded scripts, the `MD5ScriptHasher` is provided as a default script hasher.
-- `MigrationScriptJournalManager` that loads executed scripts from a table named `SchemaVersionJournal`.
-- `MigrationScriptRunner` that can execute scripts given a connection (and an optional transaction if you want the whole migration to be executed in a provided transaction).
-
-**ADatabaseFixture.SqlServer**
-Contains `SqlServerMigrationScriptRunner` which you can use as a script runner instead of `MigrationScriptRunner` if you need batch support (like if your scripts contains `GO` statements for instance).
 
 ## Getting started
 1. Create a class project to contain your migrations
@@ -57,27 +39,26 @@ Contains `SqlServerMigrationScriptRunner` which you can use as a script runner i
      - `AddNamespaces<VersionFromAssemblyVersionLoader>(MigrationScriptRunType.RunAlways, "Scripts.RunAlways")` specifies that we want to load scripts from inside the folder `Scripts\RunAlways`, we want them to be run every time we run the migrator and we use version number from the previously specified assembly.
      - Note that the order of the `AddNamespaces` invocations specifies the execution order, so in our example the _Migrations_ are executed first, then _RunIfChanged_ and last _RunAlways_. Within a namespace the migrations found are executed first in order of version, then in order of embedded resource name. This means that if you want your scripts to run in a specific order, you have full control over this by adding namespaces in the order you want.
 
+## Packages and Contents
+
+**ADatabaseMigrator**
+Contains the `Migrator` class which you instantiate to run your migrations. The class needs 3 things in order to be instantiated:
+- A script loader, that can find the script files you want to run.
+- A journal manager, that can load already executed scripts from the database.
+- A script runner that can execute scripts.
+
+You can write your own script loaders, journal managers and scripts runners, but the package comes with some predefined classes to use or extend:
+- `EmbeddedResourceScriptLoader` is a script loader that loads scripts from embedded resources in one or more assemblies. This class also requires a script hasher in order to create a unique hash for the loaded scripts, the `MD5ScriptHasher` is provided as a default script hasher.
+- `MigrationScriptJournalManager` that loads executed scripts from a table named `SchemaVersionJournal`.
+- `MigrationScriptRunner` that can execute scripts given a connection (and an optional transaction if you want the whole migration to be executed in a provided transaction).
+
+**ADatabaseFixture.SqlServer**
+Contains `SqlServerMigrationScriptRunner` which you can use as a script runner instead of `MigrationScriptRunner` if you need batch support (like if your scripts contains `GO` statements for instance).
+
+
 ## Compatibility with GalacticWasteManagement
 `ADatabaseMigrator` is inspired by, and can be somewhat made compatible with [Galactic-Waste-Management](https://github.com/mattiasnordqvist/Galactic-Waste-Management), which has been deprecated. By swapping out `MigrationScriptJournalManager` in the example above for `GalacticWasteMigrationScriptJournalManager`, you should be able to run migrations compatible with what GWM calls `LiveField`.
 
 This means that we map the `GWM` run type `Migration` to `ADatabaseMigrator` run type `RunOnce`. `GWM` has support for more run types like `Seed`, `vNext` and more, as well as creating custom run types. ADatabaseMigrator does not have support for these out of the box, but you could create custom mappings by creating your own class that inherits from `GalacticWasteMigrationScriptJournalManager` and override the `ParseGalacticWasteRunType` method. 
 
 Note however that `ADatabaseMigrator` is a more focused tool than `GWM` and will never attempt to drop or restore the database. If you have the need for such orchestrations, I would suggest implementing this yourself, where running `ADatabaseMigrator` migrations could be part of the overall orchestration.
-
-## Need batch support in Sql Server?
-If you have scripts that need to be executed in batches, for example
-```c#
-
-CREATE TABLE Table_A(
-    Id INT NOT NULL PRIMARY KEY,
-    Name NVARCHAR(50) NOT NULL
-)
-GO
-
-CREATE TABLE Table_B(
-    Id INT NOT NULL PRIMARY KEY,
-    Name NVARCHAR(50) NOT NULL
-)
-GO
-```
-... then you can add the `ADatabaseMigrator.SqlServer` -package and swap out the default script runner `MigrationScriptRunner` for `SqlServerMigrationScriptRunner`. This script runner will parse split the scripts into batches an execute each batch
