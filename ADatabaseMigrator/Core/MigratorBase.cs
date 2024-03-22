@@ -24,11 +24,11 @@ public abstract class MigratorBase<TMigration, TMigrationScript, TMigrationJourn
     protected IMigrationJournalManager<TMigrationJournal, TMigration, TMigrationScript> JournalManager { get; }
     protected IMigrationScriptRunner<TMigrationScript> ScriptRunner { get; }
 
-    public virtual async Task<IEnumerable<TMigrationScript>> Migrate(CancellationToken? cancellationToken = default)
+    public virtual async Task<IReadOnlyList<TMigrationScript>> Migrate(CancellationToken? cancellationToken = default)
     {
         var allMigrations = await ScriptLoader.Load(cancellationToken);
         var journal = await JournalManager.Load(cancellationToken);
-        var scriptsToRun = allMigrations.Where(x => ShouldRunScript(x, journal));
+        var scriptsToRun = allMigrations.Where(x => ShouldRunScript(x, journal)).ToList();
         await RunScripts(scriptsToRun, cancellationToken);
         return scriptsToRun;
     }

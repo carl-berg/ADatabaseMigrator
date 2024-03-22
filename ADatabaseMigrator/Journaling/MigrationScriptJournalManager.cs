@@ -29,6 +29,7 @@ public class MigrationScriptJournalManager(DbConnection _connection) : IMigratio
             """
             SELECT Version, Name, Applied, Hash, Type 
             FROM dbo.SchemaVersionJournal
+            ORDER BY Applied ASC
             """;
 
         using var reader = await command.ExecuteReaderAsync(cancellationToken ?? CancellationToken.None);
