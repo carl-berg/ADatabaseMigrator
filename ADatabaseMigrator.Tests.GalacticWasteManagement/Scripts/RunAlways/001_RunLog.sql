@@ -1,0 +1,1 @@
+INSERT INTO RunLog(Timestamp) VALUES(GETUTCDATE())

@@ -8,5 +8,5 @@ public interface IMigrationScriptRunner<TMigrationScript> where TMigrationScript
     /// <summary>
     /// Run migration script and append journal
     /// </summary>
-    Task Run(TMigrationScript script, string appendJournalScript, CancellationToken cancellationToken);
+    Task Run(TMigrationScript script, string appendJournalScript, CancellationToken? cancellationToken = default);
 }

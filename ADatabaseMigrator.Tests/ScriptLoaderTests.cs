@@ -17,7 +17,7 @@ public class ScriptLoaderTests
                 .AddNamespaces<VersionFromAssemblyVersionLoader>(MigrationScriptRunType.RunIfChanged, "Scripts.RunIfChanged")
                 .AddNamespaces<VersionFromAssemblyVersionLoader>(MigrationScriptRunType.RunAlways, "Scripts.RunAlways"));
 
-        var scripts = await scriptLoader.Load();
+        var scripts = await scriptLoader.Load(CancellationToken.None);
 
         await Verify(scripts)
             .ScrubMember<MigrationScript>(x => x.Script)

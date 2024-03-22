@@ -4,6 +4,28 @@
     <TargetFramework>netstandard2.0</TargetFramework>
     <Nullable>enable</Nullable>
     <LangVersion>12</LangVersion>
+    <Version>0.1.0</Version>
   </PropertyGroup>
+
+  <PropertyGroup>
+    <PackageId>ADatabaseMigrator</PackageId>
+    <Authors>Carl Berg</Authors>
+    <Copyright>Copyright (c) $([System.DateTime]::Now.Year) Carl Berg</Copyright>
+    <Description>ADatabaseMigrator a migration tool for sql databases</Description>
+    <PackageTags>ADatabaseMigrator;Database;Migration</PackageTags>
+    <PackageProjectUrl>https://github.com/carl-berg/adatabasemigrator</PackageProjectUrl>
+    <PackageLicenseExpression>MIT</PackageLicenseExpression>
+    <PackageIcon>icon.png</PackageIcon>
+    <PackageReadmeFile>README.md</PackageReadmeFile>
+    <RepositoryUrl>https://github.com/carl-berg/adatabasemigrator</RepositoryUrl>
+    <RepositoryType>git</RepositoryType>
+    <IncludeSymbols>true</IncludeSymbols>
+    <SymbolPackageFormat>snupkg</SymbolPackageFormat>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <None Include="..\icon.png" Pack="true" PackagePath="" />
+    <None Include="..\README.md" Pack="true" PackagePath="" />
+  </ItemGroup>
 
 </Project>

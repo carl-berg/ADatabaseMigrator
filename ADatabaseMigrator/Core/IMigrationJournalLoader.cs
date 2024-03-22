@@ -1,4 +1,5 @@
-﻿using System.Threading.Tasks;
+﻿using System.Threading;
+using System.Threading.Tasks;
 
 namespace ADatabaseMigrator.Core;
 
@@ -9,5 +10,5 @@ public interface IMigrationJournalLoader<TMigrationJournal, TMigration>
     /// <summary>
     /// Load migration journal (information about already migrated scripts)
     /// </summary>
-    Task<TMigrationJournal> Load();
+    Task<TMigrationJournal> Load(CancellationToken? cancellationToken = default);
 }

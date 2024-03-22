@@ -1,4 +1,5 @@
 ﻿using ADatabaseMigrator.Hashing;
+using ADatabaseMigrator.Journaling;
 using ADatabaseMigrator.ScriptLoading.EmbeddedResources;
 using ADatabaseMigrator.ScriptLoading.EmbeddedResources.Versioning;
 using ADatabaseMigrator.Tests.Core;
@@ -83,7 +84,7 @@ public class MigratorTests(DatabaseFixture fixture) : DatabaseTest(fixture)
 
     private class StaticScriptLoader(IScriptHasher scriptHasher, Func<IReadOnlyList<(string Name, string Script, MigrationScriptRunType Type, string Version)>> loadScripts) : EmbeddedResourceScriptLoader(scriptHasher)
     {
-        public override Task<IReadOnlyList<MigrationScript>> Load()
+        public override Task<IReadOnlyList<MigrationScript>> Load(CancellationToken? cancellationToken = default)
         {
             var scripts = loadScripts()
                 .Select(x => new MigrationScript(x.Name, x.Type, x.Version, x.Script, ScriptHasher.Hash(x.Script)))
