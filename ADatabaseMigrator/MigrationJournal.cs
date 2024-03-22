@@ -9,23 +9,29 @@ public class MigrationJournal : IMigrationJournal<Migration>
 {
     public MigrationJournal(IReadOnlyList<Migration> migrations) 
     {
-        Migrations = migrations.ToDictionary(x => x.Name, x => x);
+        var grouped = migrations.GroupBy(x => x.Name);
+        Migrations = grouped.ToDictionary(x => x.Key, x => (IReadOnlyList<Migration>)[.. x]);
     }
 
-    protected Dictionary<string, Migration> Migrations { get; }
+    protected Dictionary<string, IReadOnlyList<Migration>> Migrations { get; }
 
     public bool Contains(IMigration migration) => Migrations.ContainsKey(migration.Name);
 
     public bool HasChanged(MigrationScript migration)
     {
-        if (Migrations.TryGetValue(migration.Name, out var journaledMigration))
+        // Find all migrations matching by name
+        if (Migrations.TryGetValue(migration.Name, out var journaledMigrations))
         {
-            return Equals(journaledMigration.ScriptHash, migration.ScriptHash) is false;
+            // Compare with last matching one
+            if (journaledMigrations.Last() is { } lastMigration)
+            {
+                return Equals(lastMigration.ScriptHash, migration.ScriptHash) is false;
+            }
         }
 
         return true;
     }
 
-    public IEnumerator<Migration> GetEnumerator() => Migrations.Values.GetEnumerator();
+    public IEnumerator<Migration> GetEnumerator() => Migrations.Values.SelectMany(x => x).GetEnumerator();
     IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
 }

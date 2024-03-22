@@ -80,5 +80,32 @@ public class JournalManagerTests(DatabaseFixture fixture) : DatabaseTest(fixture
         }
     }
 
+    [Fact]
+    public async Task Test_Load_Scripts_Containing_Duplicates()
+    {
+        using var connection = Fixture.CreateNewConnection();
+        var journalManager = new MigrationScriptJournalManager(connection);
+        await journalManager.CreateJournalTableIfNotExists(CancellationToken.None);
+
+        await connection.ExecuteAsync(journalManager.AddJournalScript(new MigrationScript(
+            name: "Script_1",
+            runType: MigrationScriptRunType.RunIfChanged,
+            version: "1.0.0",
+            script: string.Empty,
+            scriptHash: "hash_1")));
+
+        await connection.ExecuteAsync(journalManager.AddJournalScript(new MigrationScript(
+            name: "Script_1",
+            runType: MigrationScriptRunType.RunOnce,
+            version: "1.0.1",
+            script: string.Empty,
+            scriptHash: "hash_2")));
+
+        var journal = await journalManager.Load(CancellationToken.None);
+
+        journal.ShouldAllBe(x => x.Name == "Script_1");
+        journal.Count().ShouldBe(2);
+    }
+
     private record JournalEntry(string Name, string Version, DateTime Applied, string Type, string Hash);
 }
