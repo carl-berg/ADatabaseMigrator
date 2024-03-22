@@ -1,9 +1,9 @@
 # ADatabaseMigrator - An Appeasing Database Migrator
 A small and flexible package you can use run database migration scripts.
 
-<p align="center">
-  <img src="./icon.png" width=50% height=50%>
-</p>
+
+<img src="./icon.png" alt="ADatabaseMigrator Icon" width="50%" height="50%">
+
 
 Contains the following packages:
 
