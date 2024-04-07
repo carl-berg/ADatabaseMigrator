@@ -11,15 +11,15 @@ public class MigrationJournal(IReadOnlyList<Migration> migrations) : IMigrationJ
         .GroupBy(x => x.Name)
         .ToDictionary(x => x.Key, x => (IReadOnlyList<Migration>)[.. x]);
 
-    public bool Contains(IMigration migration) => Migrations.ContainsKey(migration.Name);
+    public virtual bool Contains(IMigration migration) => Migrations.ContainsKey(migration.Name);
 
-    public bool HasChanged(MigrationScript migration)
+    public virtual bool HasChanged(MigrationScript migration)
     {
         // Find all migrations matching by name
         if (Migrations.TryGetValue(migration.Name, out var journaledMigrations))
         {
             // Compare with last matching one
-            if (journaledMigrations.Last() is { } lastMigration)
+            if (journaledMigrations.OrderBy(x => x.Applied).LastOrDefault() is { } lastMigration)
             {
                 return Equals(lastMigration.ScriptHash, migration.ScriptHash) is false;
             }
