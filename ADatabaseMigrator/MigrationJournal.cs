@@ -5,15 +5,11 @@ using ADatabaseMigrator.Core;
 
 namespace ADatabaseMigrator;
 
-public class MigrationJournal : IMigrationJournal<Migration>
+public class MigrationJournal(IReadOnlyList<Migration> migrations) : IMigrationJournal<Migration>
 {
-    public MigrationJournal(IReadOnlyList<Migration> migrations) 
-    {
-        var grouped = migrations.GroupBy(x => x.Name);
-        Migrations = grouped.ToDictionary(x => x.Key, x => (IReadOnlyList<Migration>)[.. x]);
-    }
-
-    protected Dictionary<string, IReadOnlyList<Migration>> Migrations { get; }
+    protected Dictionary<string, IReadOnlyList<Migration>> Migrations { get; } = migrations
+        .GroupBy(x => x.Name)
+        .ToDictionary(x => x.Key, x => (IReadOnlyList<Migration>)[.. x]);
 
     public bool Contains(IMigration migration) => Migrations.ContainsKey(migration.Name);
 

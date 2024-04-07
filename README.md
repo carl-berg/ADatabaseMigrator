@@ -1,7 +1,7 @@
 # ADatabaseMigrator - An Appeasing Database Migrator
 A small and flexible package you can use to run database migration scripts.
 
-<img src="./icon.png" alt="ADatabaseMigrator Icon" width="50%" height="50%">
+<img src="https://raw.githubusercontent.com/carl-berg/ADatabaseMigrator/main/icon.png" alt="ADatabaseMigrator Icon" width="50%" height="50%">
 
 ## Getting started
 1. Create a class project to contain your migrations
@@ -33,6 +33,10 @@ A small and flexible package you can use to run database migration scripts.
    await migrator.Migrate();
    ```
    Some things to note about the configuration embedded resource script loader configuration here:
+     - `MigrationScriptRunType`: `ADatabaseMigrator` comes predefined with some run types:
+       - `MigrationScriptRunType.RunOnce`: Means this script is meant to run once. This can be used for changes to the database schema, like adding columns.
+       - `MigrationScriptRunType.RunIfChanged`: Means this script is mean to run every time the content of the file is changed (this is what the script hasher is used for). This can be used for views or stored procedures.
+       - `MigrationScriptRunType.RunAlways`: Means this script is mean to run every time. This could be used for keeping a log of every time the migrator is run for instance.
      - `UsingAssemblyFromType<ScriptLoaderTests>()` specifies an assembly from which we can configure subsequent namespaces to fetch migrations from. We can call this method multiple times if we have migrations from multiple assemblies to load.
      - `AddNamespaces<VersionFromPathVersionLoader>(MigrationScriptRunType.RunOnce, "Scripts.Migrations")`, specifies that we want to load scripts from inside the folder `Scripts\Migrations`, we want them to be run only once and we want to extract the version number from the the path.
      - `AddNamespaces<VersionFromAssemblyVersionLoader>(MigrationScriptRunType.RunIfChanged, "Scripts.RunIfChanged")` specifies we want to load scripts from inside the folder `Scripts\RunIfChanged`, we want them to be run every time they are changed (when the hash of the file changes) and we use version number from the previously specified assembly.
@@ -55,10 +59,7 @@ You can write your own script loaders, journal managers and scripts runners, but
 **ADatabaseFixture.SqlServer**
 Contains `SqlServerMigrationScriptRunner` which you can use as a script runner instead of `MigrationScriptRunner` if you need batch support (like if your scripts contains `GO` statements for instance).
 
-
 ## Compatibility with GalacticWasteManagement
-`ADatabaseMigrator` is inspired by, and can be somewhat made compatible with [Galactic-Waste-Management](https://github.com/mattiasnordqvist/Galactic-Waste-Management), which has been deprecated. By swapping out `MigrationScriptJournalManager` in the example above for `GalacticWasteMigrationScriptJournalManager`, you should be able to run migrations compatible with what GWM calls `LiveField`.
+`ADatabaseMigrator` is inspired by, and can be somewhat made compatible with [Galactic-Waste-Management](https://github.com/mattiasnordqvist/Galactic-Waste-Management), which has been deprecated. 
 
-This means that we map the `GWM` run type `Migration` to `ADatabaseMigrator` run type `RunOnce`. `GWM` has support for more run types like `Seed`, `vNext` and more, as well as creating custom run types. ADatabaseMigrator does not have support for these out of the box, but you could create custom mappings by creating your own class that inherits from `GalacticWasteMigrationScriptJournalManager` and override the `ParseGalacticWasteRunType` method. 
-
-Note however that `ADatabaseMigrator` is a more focused tool than `GWM` and will never attempt to drop or restore the database. If you have the need for such orchestrations, I would suggest implementing this yourself, where running `ADatabaseMigrator` migrations could be part of the overall orchestration.
+GalacticWasteManagement and ADatabaseMigrator solves slightly different problems. While GalacticWasteManagement can be used as a development tool as well as a deployment tool, has an array of built in migration types and modes, ADatabaseMigrator is a simpler and more focused tool. ADatabaseMigrator can execute migration scripts, and that's it. ADatabaseMigrator however is built to simplify configuration and extension to allow you to build your own migration orchestration by configuration, extending or replacing parts and making it easy to introduce custom run types if you feel the need for it.

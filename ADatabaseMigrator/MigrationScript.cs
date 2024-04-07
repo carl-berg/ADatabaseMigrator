@@ -5,7 +5,7 @@ namespace ADatabaseMigrator;
 
 public class MigrationScript : IMigrationScript
 {
-    public MigrationScript(string name, MigrationScriptRunType runType, IComparable version, string script, string scriptHash)
+    public MigrationScript(string name, string runType, IComparable version, string script, string scriptHash)
     {
         Name = name;
         RunType = runType;
@@ -18,6 +18,6 @@ public class MigrationScript : IMigrationScript
     public string Script { get; }
     public string ScriptHash { get; }
     public string Name { get; }
-    public MigrationScriptRunType RunType { get; }
+    public string RunType { get; }
     public IComparable Version { get; }
 }

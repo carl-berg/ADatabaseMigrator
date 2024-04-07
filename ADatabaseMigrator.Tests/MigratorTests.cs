@@ -80,9 +80,9 @@ public class MigratorTests(DatabaseFixture fixture) : DatabaseTest(fixture)
             j => j.ShouldAllBe(x => x.Type == MigrationScriptRunType.RunIfChanged));
     }
 
-    private record SchemaVersionJournalDto(string Version, string Name, string Hash, MigrationScriptRunType Type);
+    private record SchemaVersionJournalDto(string Version, string Name, string Hash, string Type);
 
-    private class StaticScriptLoader(IScriptHasher scriptHasher, Func<IReadOnlyList<(string Name, string Script, MigrationScriptRunType Type, string Version)>> loadScripts) : EmbeddedResourceScriptLoader(scriptHasher)
+    private class StaticScriptLoader(IScriptHasher scriptHasher, Func<IReadOnlyList<(string Name, string Script, string Type, string Version)>> loadScripts) : EmbeddedResourceScriptLoader(scriptHasher)
     {
         public override Task<IReadOnlyList<MigrationScript>> Load(CancellationToken? cancellationToken = default)
         {

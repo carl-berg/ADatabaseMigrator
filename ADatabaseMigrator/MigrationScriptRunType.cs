@@ -1,8 +1,8 @@
 ﻿namespace ADatabaseMigrator;
 
-public enum MigrationScriptRunType
+public static class MigrationScriptRunType
 {
-    RunOnce = 1,
-    RunIfChanged = 2,
-    RunAlways = 3,
+    public const string RunOnce = "RunOnce";
+    public const string RunIfChanged = "RunIfChanged";
+    public const string RunAlways = "RunAlways";
 }

@@ -27,7 +27,7 @@ public class GalacticWasteCompatibilityTests(DatabaseFixture fixture) : Database
                     .AddNamespaces<VersionFromPathVersionLoader>(MigrationScriptRunType.RunOnce, "Scripts.Migrations")
                     .AddNamespaces<VersionFromAssemblyVersionLoader>(MigrationScriptRunType.RunIfChanged, "Scripts.RunIfChanged")
                     .AddNamespaces<VersionFromAssemblyVersionLoader>(MigrationScriptRunType.RunAlways, "Scripts.RunAlways")),
-            new GalacticWasteMigrationScriptJournalManager(connection), // <-- Custom journal manager for GWM compatibility
+            new MigrationScriptJournalManager(connection), // <-- Custom journal manager for GWM compatibility
             new MigrationScriptRunner(connection));
 
         var result = await migrator.Migrate(CancellationToken.None);
