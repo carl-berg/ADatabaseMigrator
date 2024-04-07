@@ -5,7 +5,7 @@ namespace ADatabaseMigrator.ScriptLoading.EmbeddedResources;
 
 internal class AssemblyBuilder(IEmbeddedResourceBuilder _root, AssemblyEmbeddedResources _resources) : IEmbeddedResourceAssemblyBuilder
 {
-    public IEmbeddedResourceAssemblyBuilder AddNamespaces(MigrationScriptRunType runType, IEmbeddedResourceVersionLoader versionLoader, params string[] namespaces)
+    public IEmbeddedResourceAssemblyBuilder AddNamespaces(string runType, IEmbeddedResourceVersionLoader versionLoader, params string[] namespaces)
     {
         foreach (var @namespace in namespaces)
         {
@@ -15,7 +15,7 @@ internal class AssemblyBuilder(IEmbeddedResourceBuilder _root, AssemblyEmbeddedR
         return this;
     }
 
-    public IEmbeddedResourceAssemblyBuilder AddNamespaces<TVersionLoader>(MigrationScriptRunType runtype, params string[] namespaces) where TVersionLoader : IEmbeddedResourceVersionLoader, new()
+    public IEmbeddedResourceAssemblyBuilder AddNamespaces<TVersionLoader>(string runtype, params string[] namespaces) where TVersionLoader : IEmbeddedResourceVersionLoader, new()
         => AddNamespaces(runtype, new TVersionLoader(), namespaces);
 
     public IEmbeddedResourceAssemblyBuilder UsingAssembly(Assembly assembly) => _root.UsingAssembly(assembly);

@@ -2,7 +2,6 @@
 using System;
 using System.Collections.Generic;
 using System.Data.Common;
-using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -21,7 +20,7 @@ public class MigrationScriptJournalManager(DbConnection _connection) : IMigratio
             '{script.RunType}')
         """;
 
-    public async Task<MigrationJournal> Load(CancellationToken? cancellationToken = default)
+    public async virtual Task<MigrationJournal> Load(CancellationToken? cancellationToken = default)
     {
         await CreateJournalTableIfNotExists(cancellationToken);
         using var command = _connection.CreateCommand();
@@ -33,22 +32,20 @@ public class MigrationScriptJournalManager(DbConnection _connection) : IMigratio
             """;
 
         using var reader = await command.ExecuteReaderAsync(cancellationToken ?? CancellationToken.None);
-        var journalEntries = new List<(string Version, string Name, DateTime Applied, string ScriptHash, string RunType)>();
+        var journalEntries = new List<Migration>();
 
         while (await reader.ReadAsync(cancellationToken ?? CancellationToken.None).ConfigureAwait(false))
         {
-            journalEntries.Add((
-                reader.GetString(0),
-                reader.GetString(1),
-                DateTime.SpecifyKind(reader.GetDateTime(2), DateTimeKind.Utc),
-                reader.GetString(3),
-                reader.GetString(4)
+            journalEntries.Add(new(
+                version: reader.GetString(0),
+                name: reader.GetString(1),
+                applied: DateTime.SpecifyKind(reader.GetDateTime(2), DateTimeKind.Utc),
+                scriptHash: reader.GetString(3),
+                runType: reader.GetString(4)
             ));
         }
 
-        return new MigrationJournal(journalEntries
-            .Select(x => ParseMigration(x.Version, x.Name, x.Applied, x.ScriptHash, x.RunType))
-            .ToList());
+        return new MigrationJournal(journalEntries);
     }
 
     public virtual async Task CreateJournalTableIfNotExists(CancellationToken? cancellationToken = default)
@@ -69,14 +66,4 @@ public class MigrationScriptJournalManager(DbConnection _connection) : IMigratio
         """;
         await command.ExecuteNonQueryAsync(cancellationToken ?? CancellationToken.None);
     }
-
-    protected virtual Migration ParseMigration(string version, string name, DateTime applied, string scriptHash, string runType) =>
-        new(
-            name,
-            Enum.TryParse<MigrationScriptRunType>(runType, out var parsedRunType)
-                ? parsedRunType
-                : throw new ArgumentException($"Migration {name} has a RunType '{runType}' which not a valid {nameof(MigrationScriptRunType)}"),
-            version,
-            applied,
-            scriptHash);
 }

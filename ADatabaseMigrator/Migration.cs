@@ -5,7 +5,7 @@ namespace ADatabaseMigrator;
 
 public class Migration : IMigration
 {
-    public Migration(string name, MigrationScriptRunType runType, IComparable version, DateTime applied, string scriptHash)
+    public Migration(string name, string runType, IComparable version, DateTime applied, string scriptHash)
     {
         Name = name;
         Version = version;
@@ -27,7 +27,7 @@ public class Migration : IMigration
     /// </summary>
     public DateTime Applied { get; }
 
-    public MigrationScriptRunType RunType { get; }
+    public string RunType { get; }
 
     /// <summary>
     /// Hash string that can be used to determine if two scripts have identical script content
