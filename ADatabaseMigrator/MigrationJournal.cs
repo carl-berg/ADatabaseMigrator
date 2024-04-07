@@ -9,7 +9,7 @@ public class MigrationJournal(IReadOnlyList<Migration> migrations) : IMigrationJ
 {
     protected Dictionary<string, IReadOnlyList<Migration>> Migrations { get; } = migrations
         .GroupBy(x => x.Name)
-        .ToDictionary(x => x.Key, x => (IReadOnlyList<Migration>)[.. x]);
+        .ToDictionary(x => x.Key, x => (IReadOnlyList<Migration>)[.. x.OrderBy(x => x.Applied)]);
 
     public virtual bool Contains(IMigration migration) => Migrations.ContainsKey(migration.Name);
 
@@ -19,7 +19,7 @@ public class MigrationJournal(IReadOnlyList<Migration> migrations) : IMigrationJ
         if (Migrations.TryGetValue(migration.Name, out var journaledMigrations))
         {
             // Compare with last matching one
-            if (journaledMigrations.OrderBy(x => x.Applied).LastOrDefault() is { } lastMigration)
+            if (journaledMigrations.LastOrDefault() is { } lastMigration)
             {
                 return Equals(lastMigration.ScriptHash, migration.ScriptHash) is false;
             }
