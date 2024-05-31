@@ -101,6 +101,9 @@ public class MigratorTests(DatabaseFixture fixture) : DatabaseTest(fixture)
         migrator.ScriptMigrationSucceeded += (_, args) => log.Add(args);
         migrator.ScriptMigrationFailed += (_, args) => log.Add(args);
 
+        migrator.ScriptMigrationSucceeded += (_, args) => Console.WriteLine($"Executed script '{args.Script.Name}'");
+        migrator.ScriptMigrationFailed += (_, args) => Console.WriteLine($"Failed to execute script '{args.Script.Name}': {args.Exception}");
+
         await Should.ThrowAsync<ScriptExecutionException>(migrator.Migrate(CancellationToken.None));
 
         await Verify(log);
