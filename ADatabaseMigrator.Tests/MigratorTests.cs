@@ -5,6 +5,8 @@ using ADatabaseMigrator.ScriptLoading.EmbeddedResources.Versioning;
 using ADatabaseMigrator.Tests.Core;
 using Dapper;
 using Shouldly;
+using System.Collections.Generic;
+using static ADatabaseMigrator.MigrationScriptRunner;
 
 namespace ADatabaseMigrator.Tests;
 
@@ -79,6 +81,31 @@ public class MigratorTests(DatabaseFixture fixture) : DatabaseTest(fixture)
             j => j.ShouldAllBe(x => x.Name == "migration"),
             j => j.ShouldAllBe(x => x.Type == MigrationScriptRunType.RunIfChanged));
     }
+
+    [Fact]
+    public async Task Test_Migration_Event_Handling()
+    {
+        using var connection = Fixture.CreateNewConnection();
+        var log = new List<object>();
+
+        var migrator = new Migrator(
+            scriptLoader: new StaticScriptLoader(new MD5ScriptHasher(), () =>
+            [
+                ("migration_1", "SELECT 1", MigrationScriptRunType.RunOnce, "1.0.0"),
+                ("migration_2", "SELECT 1 + 1", MigrationScriptRunType.RunOnce, "1.0.0"),
+                ("migration_3", "SELECT * FROM NonExistingTable", MigrationScriptRunType.RunOnce, "1.0.0")
+            ]),
+            journalManager: new MigrationScriptJournalManager(connection),
+            scriptRunner: new MigrationScriptRunner(connection));
+
+        migrator.ScriptMigrationSucceeded += (_, args) => log.Add(args);
+        migrator.ScriptMigrationFailed += (_, args) => log.Add(args);
+
+        await Should.ThrowAsync<ScriptExecutionException>(migrator.Migrate(CancellationToken.None));
+
+        await Verify(log);
+    }
+
 
     private record SchemaVersionJournalDto(string Version, string Name, string Hash, string Type);
 

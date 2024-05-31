@@ -1,28 +1,27 @@
-﻿using System.Collections.Generic;
+﻿using ADatabaseMigrator.Core.Events;
+using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using static ADatabaseMigrator.MigrationScriptRunner;
 
 namespace ADatabaseMigrator.Core;
 
-public abstract class MigratorBase<TMigration, TMigrationScript, TMigrationJournal>
+public abstract class MigratorBase<TMigration, TMigrationScript, TMigrationJournal>(
+    IMigrationScriptLoader<TMigrationScript> scriptLoader,
+    IMigrationJournalManager<TMigrationJournal, TMigration, TMigrationScript> journalManager,
+    IMigrationScriptRunner<TMigrationScript> scriptRunner)
     where TMigration : IMigration
     where TMigrationScript : IMigrationScript
     where TMigrationJournal : IMigrationJournal<TMigration>
 {
-    public MigratorBase(
-        IMigrationScriptLoader<TMigrationScript> scriptLoader,
-        IMigrationJournalManager<TMigrationJournal, TMigration, TMigrationScript> journalManager,
-        IMigrationScriptRunner<TMigrationScript> scriptRunner)
-    {
-        ScriptLoader = scriptLoader;
-        JournalManager = journalManager;
-        ScriptRunner = scriptRunner;
-    }
+    public event EventHandler<ScriptMigrationSucceededEventArgs<TMigrationScript>>? ScriptMigrationSucceeded;
+    public event EventHandler<ScriptMigrationFailedEventArgs<TMigrationScript>>? ScriptMigrationFailed;
 
-    protected IMigrationScriptLoader<TMigrationScript> ScriptLoader { get; }
-    protected IMigrationJournalManager<TMigrationJournal, TMigration, TMigrationScript> JournalManager { get; }
-    protected IMigrationScriptRunner<TMigrationScript> ScriptRunner { get; }
+    protected IMigrationScriptLoader<TMigrationScript> ScriptLoader { get; } = scriptLoader;
+    protected IMigrationJournalManager<TMigrationJournal, TMigration, TMigrationScript> JournalManager { get; } = journalManager;
+    protected IMigrationScriptRunner<TMigrationScript> ScriptRunner { get; } = scriptRunner;
 
     public virtual async Task<IReadOnlyList<TMigrationScript>> Migrate(CancellationToken? cancellationToken = default)
     {
@@ -40,7 +39,18 @@ public abstract class MigratorBase<TMigration, TMigrationScript, TMigrationJourn
         foreach (var migrationScript in migrationScripts)
         {
             var appendJournalScript = JournalManager.AddJournalScript(migrationScript);
-            await ScriptRunner.Run(migrationScript, appendJournalScript, cancellationToken);
+            try
+            {
+                await ScriptRunner.Run(migrationScript, appendJournalScript, cancellationToken);
+                ScriptMigrationSucceeded?.Invoke(this, new ScriptMigrationSucceededEventArgs<TMigrationScript>(migrationScript));
+            }
+            catch (ScriptExecutionException ex)
+            {
+                ScriptMigrationFailed?.Invoke(this, new ScriptMigrationFailedEventArgs<TMigrationScript>(migrationScript, ex));
+                throw;
+            }
         }
     }
+
+
 }
