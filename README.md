@@ -1,8 +1,6 @@
 # ADatabaseMigrator - An Appeasing Database Migrator
 A small and flexible package you can use to run database migration scripts.
 
-<img src="https://raw.githubusercontent.com/carl-berg/ADatabaseMigrator/main/icon.png" alt="ADatabaseMigrator Icon" width="50%" height="50%">
-
 ## Getting started
 1. Create a class project to contain your migrations
 2. Place your migrations in a file structure like this:
@@ -58,6 +56,17 @@ You can write your own script loaders, journal managers and scripts runners, but
 
 **ADatabaseFixture.SqlServer**
 Contains `SqlServerMigrationScriptRunner` which you can use as a script runner instead of `MigrationScriptRunner` if you need batch support (like if your scripts contains `GO` statements for instance).
+
+## Logging
+Simple logging of executed scripts or script failures can be implemented like this (replace `Console.WriteLine` with your own choice of logging mechanism):
+```c#
+var migrator = new Migrator(/*...*/)
+
+migrator.ScriptMigrationSucceeded += (_, args) => Console.WriteLine($"Executed script '{args.Script.Name}'");
+migrator.ScriptMigrationFailed += (_, args) => Console.WriteLine($"Failed to execute script '{args.Script.Name}': {args.Exception}");
+
+await migrator.Migrate();
+```
 
 ## Compatibility with GalacticWasteManagement
 `ADatabaseMigrator` is inspired by, and can be somewhat made compatible with [Galactic-Waste-Management](https://github.com/mattiasnordqvist/Galactic-Waste-Management), which has been deprecated. 

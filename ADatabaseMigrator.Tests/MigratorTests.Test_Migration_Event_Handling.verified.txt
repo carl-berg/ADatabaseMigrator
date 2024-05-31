@@ -1,0 +1,94 @@
+﻿[
+  {
+    Script: {
+      Script: SELECT 1,
+      ScriptHash: Guid_1,
+      Name: migration_1,
+      RunType: RunOnce,
+      Version: 1.0.0
+    }
+  },
+  {
+    Script: {
+      Script: SELECT 1 + 1,
+      ScriptHash: Guid_2,
+      Name: migration_2,
+      RunType: RunOnce,
+      Version: 1.0.0
+    }
+  },
+  {
+    Script: {
+      Script: SELECT * FROM NonExistingTable,
+      ScriptHash: Guid_3,
+      Name: migration_3,
+      RunType: RunOnce,
+      Version: 1.0.0
+    },
+    Exception: {
+      $type: MigrationScriptRunner.ScriptExecutionException,
+      Type: ScriptExecutionException,
+      Message: Script migration_3 could not be executed.,
+      Data: {
+        MigrationScript: {
+          Script: SELECT * FROM NonExistingTable,
+          ScriptHash: Guid_3,
+          Name: migration_3,
+          RunType: RunOnce,
+          Version: 1.0.0
+        }
+      },
+      InnerException: {
+        $type: SqlException,
+        Type: SqlException,
+        Errors: [
+          {
+            Source: Core Microsoft SqlClient Data Provider,
+            Number: 208,
+            State: 1,
+            Class: 16,
+            Server: (localdb)\MSSQLLocalDB,
+            Message: Invalid object name 'NonExistingTable'.,
+            Procedure: ,
+            LineNumber: 1
+          }
+        ],
+        ClientConnectionId: Guid_4,
+        Class: 16,
+        LineNumber: 1,
+        Number: 208,
+        Procedure: ,
+        Server: (localdb)\MSSQLLocalDB,
+        State: 1,
+        IsTransient: false,
+        ErrorCode: -2146232060,
+        Message: Invalid object name 'NonExistingTable'.,
+        Data: {
+          HelpLink.ProdName: Microsoft SQL Server,
+          HelpLink.ProdVer: 15.00.4153,
+          HelpLink.EvtSrc: MSSQLServer,
+          HelpLink.EvtID: 208,
+          HelpLink.BaseHelpUrl: https://go.microsoft.com/fwlink,
+          HelpLink.LinkId: 20476
+        },
+        StackTrace:
+at Microsoft.Data.SqlClient.SqlConnection.OnError(SqlException exception, Boolean breakConnection, Action`1 wrapCloseInAction)
+at Microsoft.Data.SqlClient.SqlInternalConnection.OnError(SqlException exception, Boolean breakConnection, Action`1 wrapCloseInAction)
+at Microsoft.Data.SqlClient.TdsParser.ThrowExceptionAndWarning(TdsParserStateObject stateObj, Boolean callerHasConnectionLock, Boolean asyncClose)
+at Microsoft.Data.SqlClient.TdsParser.TryRun(RunBehavior runBehavior, SqlCommand cmdHandler, SqlDataReader dataStream, BulkCopySimpleResultSet bulkCopyHandler, TdsParserStateObject stateObj, Boolean& dataReady)
+at Microsoft.Data.SqlClient.SqlCommand.InternalEndExecuteNonQuery(IAsyncResult asyncResult, Boolean isInternal, String endMethod)
+at Microsoft.Data.SqlClient.SqlCommand.EndExecuteNonQueryInternal(IAsyncResult asyncResult)
+at Microsoft.Data.SqlClient.SqlCommand.EndExecuteNonQueryAsync(IAsyncResult asyncResult)
+at Microsoft.Data.SqlClient.SqlCommand.<>c.<InternalExecuteNonQueryAsync>b__210_1(IAsyncResult result)
+at System.Threading.Tasks.TaskFactory`1.FromAsyncCoreLogic(IAsyncResult iar, Func`2 endFunction, Action`1 endAction, Task`1 promise, Boolean requiresSynchronization)
+--- End of stack trace from previous location ---
+at ADatabaseMigrator.MigrationScriptRunner.ExecuteScript(String scriptName, String script, DbTransaction transaction, Nullable`1 cancellationToken)
+at ADatabaseMigrator.MigrationScriptRunner.Run(MigrationScript migrationScript, String appendJournalScript, Nullable`1 cancellationToken)
+      },
+      StackTrace:
+at ADatabaseMigrator.MigrationScriptRunner.Run(MigrationScript migrationScript, String appendJournalScript, Nullable`1 cancellationToken)
+at ADatabaseMigrator.Core.MigratorBase`3.RunScripts(IEnumerable`1 migrationScripts, Nullable`1 cancellationToken)
+at ADatabaseMigrator.Core.MigratorBase`3.Migrate(Nullable`1 cancellationToken)
+    }
+  }
+]
