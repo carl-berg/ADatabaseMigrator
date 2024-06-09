@@ -15,7 +15,7 @@ public class JournalManagerTests(DatabaseFixture fixture) : DatabaseTest(fixture
         await journalManager.CreateJournalTableIfNotExists(CancellationToken.None);
 
         // Verify SchemaVersionJournal table exists (and can be queried)
-        await Should.NotThrowAsync(connection.QuerySingleAsync<int>("SELECT COUNT(1) FROM SchemaVersionJournal"));
+        await Should.NotThrowAsync(connection.QuerySingleAsync<int>($"SELECT COUNT(1) FROM {MigrationScriptJournalManager.JournalTableName}"));
     }
 
     [Fact]
@@ -41,7 +41,7 @@ public class JournalManagerTests(DatabaseFixture fixture) : DatabaseTest(fixture
 
         // Verify journal entries exist
         var journalEntries = await connection.QueryAsync<JournalEntry>(
-            "SELECT Name, Version, Applied, Type, Hash FROM SchemaVersionJournal");
+            $"SELECT Name, Version, Applied, Type, Hash FROM {MigrationScriptJournalManager.JournalTableName}");
 
         await Verify(journalEntries)
             .ScrubMember<JournalEntry>(x => x.Applied);

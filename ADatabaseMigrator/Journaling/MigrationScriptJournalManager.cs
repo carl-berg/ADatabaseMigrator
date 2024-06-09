@@ -9,9 +9,11 @@ namespace ADatabaseMigrator.Journaling;
 
 public class MigrationScriptJournalManager(DbConnection _connection) : IMigrationJournalManager<MigrationJournal, Migration, MigrationScript>
 {
+    public const string JournalTableName = "SchemaVersionJournal";
+
     public string AddJournalScript(MigrationScript script) =>
         $"""
-        INSERT INTO dbo.SchemaVersionJournal(Version, Name, Applied, Hash, Type)
+        INSERT INTO dbo.{JournalTableName}(Version, Name, Applied, Hash, Type)
         VALUES(
             '{script.Version}',
             '{script.Name}',
@@ -25,9 +27,9 @@ public class MigrationScriptJournalManager(DbConnection _connection) : IMigratio
         await CreateJournalTableIfNotExists(cancellationToken);
         using var command = _connection.CreateCommand();
         command.CommandText =
-            """
+            $"""
             SELECT Version, Name, Applied, Hash, Type 
-            FROM dbo.SchemaVersionJournal
+            FROM dbo.{JournalTableName}
             ORDER BY Applied ASC
             """;
 
@@ -52,10 +54,10 @@ public class MigrationScriptJournalManager(DbConnection _connection) : IMigratio
     {
         using var command = _connection.CreateCommand();
         command.CommandText =
-        """
-        IF OBJECT_ID(N'dbo.SchemaVersionJournal', N'U') IS NULL BEGIN
-            CREATE TABLE dbo.SchemaVersionJournal (
-                [Id] int IDENTITY(1,1) NOT NULL CONSTRAINT PK_SchemaVersionJournal_Id PRIMARY KEY,
+        $"""
+        IF OBJECT_ID(N'dbo.{JournalTableName}', N'U') IS NULL BEGIN
+            CREATE TABLE dbo.{JournalTableName} (
+                [Id] int IDENTITY(1,1) NOT NULL CONSTRAINT PK_{JournalTableName}_Id PRIMARY KEY,
                 [Version] NVARCHAR(255) NOT NULL,                    
                 [Name] NVARCHAR(255) NOT NULL,
                 [Applied] DATETIME2 NOT NULL,

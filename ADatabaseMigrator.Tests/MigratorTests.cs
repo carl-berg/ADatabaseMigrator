@@ -29,7 +29,7 @@ public class MigratorTests(DatabaseFixture fixture) : DatabaseTest(fixture)
         await migrator.Migrate(CancellationToken.None);
 
         var tables = await connection.QueryAsync<string>("SELECT table_name FROM INFORMATION_SCHEMA.TABLES");
-        var journal = await connection.QueryAsync<SchemaVersionJournalDto>("SELECT Version, Name, Hash, Type FROM SchemaVersionJournal");
+        var journal = await connection.QueryAsync<SchemaVersionJournalDto>($"SELECT Version, Name, Hash, Type FROM {MigrationScriptJournalManager.JournalTableName}");
         var runLogEntries = await connection.QuerySingleAsync<int>("SELECT COUNT(1) FROM RunLog");
 
         await Verify(new { tables, journal, runLogEntries })
@@ -74,7 +74,7 @@ public class MigratorTests(DatabaseFixture fixture) : DatabaseTest(fixture)
         second_run.ShouldBeEmpty();
         third_run.ShouldHaveSingleItem();
 
-        var journal = await connection.QueryAsync<SchemaVersionJournalDto>("SELECT Version, Name, Hash, Type FROM SchemaVersionJournal");
+        var journal = await connection.QueryAsync<SchemaVersionJournalDto>($"SELECT Version, Name, Hash, Type FROM {MigrationScriptJournalManager.JournalTableName}");
         journal.ShouldSatisfyAllConditions(
             j => j.Count().ShouldBe(2),
             j => j.ShouldAllBe(x => x.Version == "1.0.0"),
