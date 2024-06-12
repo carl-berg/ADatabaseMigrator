@@ -3,11 +3,9 @@
 namespace ADatabaseMigrator.Tests.GalacticWasteManagement.Core;
 
 [Collection("DatabaseIntegrationTest")]
-public abstract class DatabaseTest : IAsyncLifetime
+public abstract class DatabaseTest(DatabaseFixture fixture) : IAsyncLifetime
 {
-    protected DatabaseTest(DatabaseFixture fixture) => Fixture = fixture;
-
-    protected DatabaseFixture Fixture { get; }
+    protected DatabaseFixture Fixture { get; } = fixture;
 
     public Task InitializeAsync() => Task.CompletedTask;
 
