@@ -106,7 +106,8 @@ public class MigratorTests(DatabaseFixture fixture) : DatabaseTest(fixture)
 
         await Should.ThrowAsync<ScriptExecutionException>(migrator.Migrate(CancellationToken.None));
 
-        await Verify(log);
+        await Verify(log)
+            .ScrubMember<Exception>(x => x.StackTrace);
     }
 
 
